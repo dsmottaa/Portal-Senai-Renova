@@ -87,6 +87,10 @@ class NotasController {
     }
   }
 
+  onTurmaUcChange(turmaId, ucId) {
+    this.onTurmaChange(turmaId, ucId);
+  }
+
   filtrarPorNome(termo) {
     this.termoBusca = (termo || '').toLowerCase().trim();
     this.renderizarAvaliacoes();
@@ -112,8 +116,9 @@ class NotasController {
     this.preencherSelectAvaliacoes(avaliacoes);
 
     const avaliacaoId = this.avaliacaoAtivaId || (avaliacoes.length > 0 ? avaliacoes[0].id : 1);
-    const avaliacaoAtiva = avaliacoes.find(a => a.id === avaliacaoId);
-    this.atualizarPillsAvaliacao(avaliacaoAtiva);
+    const avaliacaoAtiva = avaliacoes.find(a => Number(a.id) === Number(avaliacaoId));
+    const somaPesos = avaliacoes.reduce((acc, a) => acc + (Number(a.peso) || 0), 0);
+    this.atualizarPillsAvaliacao(avaliacaoAtiva, avaliacoes.length, somaPesos);
 
     tbody.innerHTML = alunos.map((aluno, idx) => {
       const numero = idx + 1;
@@ -159,20 +164,31 @@ class NotasController {
     if (!select) return;
     const currentValue = select.value;
     select.innerHTML = '<option value="">Selecione uma avaliação...</option>' +
-      avaliacoes.map(a => `<option value="${a.id}">${a.titulo} (${a.tipo})</option>`).join('');
-    if (currentValue && avaliacoes.some(a => String(a.id) === currentValue)) {
+      avaliacoes.map(a => `<option value="${a.id}">${a.titulo} (${a.tipo} • Peso: ${a.peso || 1})</option>`).join('');
+    if (this.avaliacaoAtivaId && avaliacoes.some(a => Number(a.id) === Number(this.avaliacaoAtivaId))) {
+      select.value = String(this.avaliacaoAtivaId);
+    } else if (currentValue && avaliacoes.some(a => String(a.id) === currentValue)) {
       select.value = currentValue;
       this.avaliacaoAtivaId = Number(currentValue);
     } else if (avaliacoes.length > 0) {
-      select.value = avaliacoes[0].id;
-      this.avaliacaoAtivaId = avaliacoes[0].id;
+      select.value = String(avaliacoes[0].id);
+      this.avaliacaoAtivaId = Number(avaliacoes[0].id);
+    } else {
+      select.value = '';
+      this.avaliacaoAtivaId = null;
     }
   }
 
-  atualizarPillsAvaliacao(avaliacao) {
+  atualizarPillsAvaliacao(avaliacao, totalAvaliacoes = 0, somaPesos = 0) {
+    const pillTotal = document.getElementById('pillAvaliacoesTotal');
+    const pillSomaPesos = document.getElementById('pillAvaliacoesSomaPesos');
     const pillTipo = document.getElementById('pillAvaliacaoTipo');
     const pillPeso = document.getElementById('pillAvaliacaoPeso');
     const pillData = document.getElementById('pillAvaliacaoData');
+
+    if (pillTotal) pillTotal.innerHTML = `Avaliações na UC: <strong>${totalAvaliacoes}</strong>`;
+    if (pillSomaPesos) pillSomaPesos.innerHTML = `Soma dos Pesos: <strong>${somaPesos.toFixed(1)}</strong>`;
+
     if (avaliacao) {
       if (pillTipo) pillTipo.innerHTML = `Tipo: <strong>${avaliacao.tipo}</strong>`;
       if (pillPeso) pillPeso.innerHTML = `Peso: <strong>${avaliacao.peso || 1}</strong>`;
@@ -344,7 +360,8 @@ class NotasController {
     }
     const titulo = document.getElementById('inputNovaAvaliacaoTitulo') ? document.getElementById('inputNovaAvaliacaoTitulo').value.trim() : '';
     const tipo = document.getElementById('selectNovaAvaliacaoTipo') ? document.getElementById('selectNovaAvaliacaoTipo').value : 'PROVA';
-    const peso = parseFloat(document.getElementById('inputNovaAvaliacaoPeso') ? document.getElementById('inputNovaAvaliacaoPeso').value : '1.0') || 1.0;
+    const pesoRaw = document.getElementById('inputNovaAvaliacaoPeso') ? document.getElementById('inputNovaAvaliacaoPeso').value.trim() : '';
+    const peso = parseFloat(pesoRaw);
     const data = document.getElementById('inputNovaAvaliacaoData') ? document.getElementById('inputNovaAvaliacaoData').value : new Date().toISOString().split('T')[0];
     const valorMax = parseFloat(document.getElementById('inputNovaAvaliacaoValorMaximo') ? document.getElementById('inputNovaAvaliacaoValorMaximo').value : '100') || 100;
 
@@ -353,8 +370,13 @@ class NotasController {
       return;
     }
 
+    if (!pesoRaw || isNaN(peso) || peso <= 0) {
+      window.app.mostrarToast('O peso da avaliação é obrigatório e deve ser maior que zero (peso > 0).', 'warning');
+      return;
+    }
+
     if (window.db && window.db.addAvaliacao) {
-      window.db.addAvaliacao({
+      const novaAvaliacao = window.db.addAvaliacao({
         turmaId: Number(this.turmaId),
         ucId: Number(this.ucId),
         titulo: titulo,
@@ -363,6 +385,9 @@ class NotasController {
         data: data,
         notaMaxima: valorMax
       });
+      if (novaAvaliacao && novaAvaliacao.id) {
+        this.avaliacaoAtivaId = Number(novaAvaliacao.id);
+      }
       window.app.fecharModal('modalNovaAvaliacao');
       window.app.mostrarToast(`Avaliação "${titulo}" cadastrada com sucesso!`, 'success');
       this.renderizarAvaliacoes();

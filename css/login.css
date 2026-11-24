@@ -344,7 +344,7 @@
   background: linear-gradient(135deg, var(--senai-red) 0%, var(--senai-red-hover) 100%);
   border: none;
   border-radius: var(--senai-radius);
-  color: var(--text-main);
+  color: #ffffff !important;
   font-size: 15px;
   font-weight: 700;
   font-family: var(--font-family);
@@ -354,11 +354,19 @@
 }
 
 .btn-senai-submit:hover:not(:disabled) {
+  color: #ffffff !important;
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(195, 22, 28, 0.45);
 }
 
+.btn-senai-submit:focus {
+  color: #ffffff !important;
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
 .btn-senai-submit:active:not(:disabled) {
+  color: #ffffff !important;
   transform: translateY(0);
 }
 

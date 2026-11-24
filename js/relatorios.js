@@ -829,6 +829,24 @@ class RelatoriosController {
       window.db.registrarRelatorio('ALUNO', tipo, titulo, this.turmaId, null, blobUrl);
     }
 
+    // Disparar o download real do arquivo .pdf conforme solicitado
+    const nomeLimpo = (alunoRef.nome || 'Estudante').replace(/[^a-zA-Z0-9]/g, '_');
+    const nomeArquivo = tipo === 'aluno_boletim'
+      ? `Boletim_Escolar_${nomeLimpo}_${opcoesObj.semestre ? String(opcoesObj.semestre).replace('/', '_') : '2026_1'}.pdf`
+      : `Comprovante_Frequencia_${nomeLimpo}.pdf`;
+
+    try {
+      doc.save(nomeArquivo);
+    } catch (e) {
+      console.warn('Fallback doc.save via link:', e);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     this._abrirModalPDF(blobUrl, titulo, doc);
     this.renderizarHistorico();
   }

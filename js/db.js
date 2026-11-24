@@ -3449,8 +3449,10 @@ class RenovaDB {
   }
 
   addAvaliacao(avaliacao) {
+    if (!this.data.avaliacoes) this.data.avaliacoes = [];
+    const novoId = Math.max(0, ...this.data.avaliacoes.map(a => Number(a.id) || 0)) + 1;
     const novo = {
-      id: this.data.avaliacoes.length + 1,
+      id: novoId,
       ...avaliacao
     };
     this.data.avaliacoes.push(novo);

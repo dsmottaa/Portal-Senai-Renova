@@ -267,7 +267,7 @@ class CoordenadorController {
       let actionButtons = '';
 
       if (isFechado) {
-        statusBadge = '<span class="coord-badge badge-aprovado" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;">✓ Diário Fechado e Homologado</span>';
+        statusBadge = '<span class="coord-badge badge-aprovado" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;">Diário Fechado e Homologado</span>';
         actionButtons = `
           <button type="button" class="btn btn-outline btn-sm" onclick="window.coordenadorController.reabrirDiario(${turma.id})" style="border-color:#0284c7; color:#0284c7; font-weight:600;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;">
@@ -310,7 +310,7 @@ class CoordenadorController {
               <div style="display:flex; align-items:center; justify-content:space-between;">
                 <span>${p.nome} <em style="color:#64748b;">(${p.papel || 'Docente'})</em></span>
                 <span class="badge ${p.fechado ? 'bg-success text-white' : 'bg-secondary text-white'}" style="font-size:10px; padding:2px 6px; border-radius:4px;">
-                  ${p.fechado ? '✓ Etapa Concluída' : 'Em Andamento'}
+                  ${p.fechado ? 'Etapa Concluída' : 'Em Andamento'}
                 </span>
               </div>
             `).join('')}
@@ -337,7 +337,7 @@ class CoordenadorController {
             <div class="fechamento-metrica"><span class="metrica-val">${freqMedia}%</span><span class="metrica-label">Freq. Média</span></div>
             <div class="fechamento-metrica ${emRisco > 0 ? 'metrica-alerta' : ''}"><span class="metrica-val">${emRisco}</span><span class="metrica-label">Em Risco</span></div>
           </div>
-          ${(sol && sol.observacao) ? `<div class="fechamento-obs">💬 <em>"${sol.observacao}"</em></div>` : ''}
+          ${(sol && sol.observacao) ? `<div class="fechamento-obs"><em>"${sol.observacao}"</em></div>` : ''}
           <div class="fechamento-actions">
             ${actionButtons}
           </div>
@@ -969,8 +969,8 @@ class CoordenadorController {
             const sol = self._getSolicitacoes().find(s => s.turmaId === turma.id);
             const statusDiarioBadge = sol
               ? (sol.status === 'APROVADO'
-                ? '<span class="coord-badge badge-aprovado">✓ Diário Fechado</span>'
-                : '<span class="coord-badge badge-aguardando">⏳ Aguardando Homologação</span>')
+                ? '<span class="coord-badge badge-aprovado">Diário Fechado</span>'
+                : '<span class="coord-badge badge-aguardando">Aguardando Homologação</span>')
               : '<span class="coord-badge badge-aberto">Diário Aberto</span>';
 
             const mediaColor = mediaNum >= 70 ? 'var(--color-success, #16a34a)' : (mediaNum >= 50 ? 'var(--color-warning, #d97706)' : 'var(--color-danger, #dc2626)');
@@ -1403,7 +1403,7 @@ class CoordenadorController {
           if (preview) {
             preview.style.display = 'block';
             preview.innerHTML = `
-              <strong>✓ Arquivo JSON Válido:</strong> ${file.name} (${(file.size/1024).toFixed(1)} KB)<br>
+              <strong>Arquivo JSON Válido:</strong> ${file.name} (${(file.size/1024).toFixed(1)} KB)<br>
               <strong>Turma detectada:</strong> ${parsed.turma ? (parsed.turma.codigo || parsed.turma.nome) : (parsed.nome || 'Turma Externa')}<br>
               <strong>Itens identificados:</strong> ${(parsed.alunos ? parsed.alunos.length : 0)} alunos, ${(parsed.cronogramaAulas ? parsed.cronogramaAulas.length : 0)} aulas no cronograma.
             `;
@@ -1414,7 +1414,7 @@ class CoordenadorController {
           if (preview) {
             preview.style.display = 'block';
             preview.innerHTML = `
-              <strong>✓ Arquivo CSV Reconhecido:</strong> ${file.name}<br>
+              <strong>Arquivo CSV Reconhecido:</strong> ${file.name}<br>
               <strong>Total de linhas:</strong> ${linhas.length} registros encontrados para processamento.
             `;
           }
@@ -1618,6 +1618,30 @@ class CoordenadorController {
     // Atualiza seletores no portal do professor e orientação
     if (window.app && typeof window.app.popularSelectTurmasGlobal === 'function') {
       window.app.popularSelectTurmasGlobal();
+    }
+  }
+
+  abrirModalRegistrarCompensacao(id) {
+    if (window.compensacoesController) {
+      window.compensacoesController.abrirModalRegistrarCompensacao(id);
+    }
+  }
+
+  abrirModalNovaCompensacao(alunoId = null) {
+    if (window.compensacoesController) {
+      window.compensacoesController.abrirModalNovaCompensacao(alunoId);
+    }
+  }
+
+  aprovarCompensacao(id) {
+    if (window.compensacoesController) {
+      window.compensacoesController.aprovarCompensacao(id);
+    }
+  }
+
+  homologarCompensacao(id) {
+    if (window.compensacoesController) {
+      window.compensacoesController.aprovarCompensacao(id);
     }
   }
 

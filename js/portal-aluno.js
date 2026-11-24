@@ -262,6 +262,24 @@ class PortalAlunoController {
         if (typeof window.db.persist === 'function') window.db.persist();
       }
 
+      // Se envolver compensação, registra também na fila de compensações
+      if ((motivo && motivo.toLowerCase().includes('compens')) || (descricao && descricao.toLowerCase().includes('compens'))) {
+        if (window.db && typeof window.db.addCompensacao === 'function') {
+          window.db.addCompensacao({
+            alunoId: aluno.id,
+            alunoNome: aluno.nome,
+            turmaId: aluno.turmaId || 1,
+            horasObrigacao: 2,
+            dataLimite: dataFimFinal,
+            motivoOrigem: motivo || 'Solicitação de compensação de ausência',
+            atividadeDescricao: descricao || 'Atividade de reposição a ser definida pela Orientação',
+            tipoOrigem: 'FALTAS',
+            status: 'PENDENTE'
+          });
+          if (typeof window.db.persist === 'function') window.db.persist();
+        }
+      }
+
       this.fecharModalSolicitarJustificativa();
 
       // Dispara eventos para atualização em tempo real no Orientador e no Diário
@@ -290,6 +308,14 @@ class PortalAlunoController {
     } else {
       salvarRegistro(null, null);
     }
+  }
+
+  abrirModalSolicitarCompensacao() {
+    this.abrirModalSolicitarJustificativa();
+  }
+
+  solicitarCompensacao() {
+    this.abrirModalSolicitarJustificativa();
   }
 }
 

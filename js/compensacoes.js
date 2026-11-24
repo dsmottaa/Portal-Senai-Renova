@@ -276,12 +276,166 @@ class CompensacoesController {
     window.app.mostrarToast(`Compensação registrada! Faltas convertidas em presença compensada (J) e % recalculado.`, 'success');
   }
 
+  // Métodos de Modais e Homologação de Compensação
+  abrirModalRegistrarCompensacao(id) {
+    const inputId = document.getElementById('inputCompensacaoId');
+    const textRelato = document.getElementById('textCompensacaoRelato');
+    if (inputId) inputId.value = id || '';
+    if (textRelato) textRelato.value = '';
+    if (window.app && typeof window.app.abrirModal === 'function') {
+      window.app.abrirModal('modalRegistrarCompensacao');
+    }
+  }
+
+  salvarCumprimento() {
+    const inputId = document.getElementById('inputCompensacaoId');
+    const compId = inputId ? Number(inputId.value) : null;
+    const relato = (document.getElementById('textCompensacaoRelato')?.value || '').trim();
+
+    if (!compId) {
+      if (window.app) window.app.mostrarToast('ID de compensação inválido.', 'error');
+      return;
+    }
+
+    if (window.db) {
+      const compensacoes = window.db.data.compensacoes || [];
+      const comp = compensacoes.find(c => Number(c.id) === compId);
+      if (comp) {
+        comp.status = 'CUMPRIDO';
+        comp.homologado = true;
+        comp.dataHomologacao = new Date().toISOString();
+        comp.relato = relato || 'Compensação de falta homologada.';
+
+        // Converter eventuais faltas do aluno em 'J'
+        const aulas = window.db.data.aulas || [];
+        aulas.forEach(aula => {
+          if (aula.turmaId === Number(comp.turmaId) && aula.frequencias && aula.frequencias[comp.alunoId]) {
+            aula.frequencias[comp.alunoId] = aula.frequencias[comp.alunoId].map(st => st === 'F' ? 'J' : st);
+          }
+        });
+
+        if (typeof window.db.persist === 'function') {
+          window.db.persist();
+        }
+      }
+    }
+
+    window.dispatchEvent(new CustomEvent('renova:db-updated'));
+    if (window.app && typeof window.app.fecharModal === 'function') {
+      window.app.fecharModal('modalRegistrarCompensacao');
+    }
+    if (window.portalOrientadorController && typeof window.portalOrientadorController.renderCompensacoes === 'function') {
+      window.portalOrientadorController.renderCompensacoes();
+    }
+    if (window.sinteseController && typeof window.sinteseController.renderizar === 'function') {
+      window.sinteseController.renderizar();
+    }
+    if (window.app) {
+      window.app.mostrarToast('Compensação homologada e status atualizado com sucesso!', 'success');
+    }
+  }
+
+  abrirModalNovaCompensacao(alunoId = null) {
+    const select = document.getElementById('selectNovaCompensacaoAluno');
+    const horasInput = document.getElementById('inputNovaCompensacaoHoras');
+    const dataLimiteInput = document.getElementById('inputNovaCompensacaoDataLimite');
+    const motivoInput = document.getElementById('inputNovaCompensacaoMotivo');
+    const descTextarea = document.getElementById('textNovaCompensacaoDescricao');
+
+    if (select && window.db) {
+      const alunos = window.db.getAlunosPorTurma ? window.db.getAlunosPorTurma(this.turmaId) : (window.db.data.alunos || []);
+      select.innerHTML = '<option value="">Selecione o aluno...</option>' +
+        alunos.filter(a => a.statusMatricula === 'ATIVO').map(a => `<option value="${a.id}">${a.nome} (RA: ${a.ra || a.id})</option>`).join('');
+      if (alunoId) {
+        select.value = String(alunoId);
+      }
+    }
+
+    if (horasInput) horasInput.value = '2';
+    if (dataLimiteInput) {
+      const em7dias = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+      dataLimiteInput.value = em7dias;
+    }
+    if (motivoInput) motivoInput.value = 'Reposição de conteúdo prático e atividades em atraso';
+    if (descTextarea) descTextarea.value = '';
+
+    if (window.app && typeof window.app.abrirModal === 'function') {
+      window.app.abrirModal('modalNovaCompensacao');
+    }
+  }
+
+  salvarNovaCompensacao() {
+    const alunoIdVal = document.getElementById('selectNovaCompensacaoAluno')?.value;
+    const horasVal = document.getElementById('inputNovaCompensacaoHoras')?.value;
+    const dataLimiteVal = document.getElementById('inputNovaCompensacaoDataLimite')?.value;
+    const motivoVal = document.getElementById('inputNovaCompensacaoMotivo')?.value;
+    const descVal = document.getElementById('textNovaCompensacaoDescricao')?.value;
+
+    if (!alunoIdVal) {
+      if (window.app) window.app.mostrarToast('Selecione um aluno.', 'warning');
+      return;
+    }
+    if (!horasVal || Number(horasVal) <= 0) {
+      if (window.app) window.app.mostrarToast('Informe a quantidade de horas a compensar.', 'warning');
+      return;
+    }
+    if (!dataLimiteVal) {
+      if (window.app) window.app.mostrarToast('Informe o prazo limite.', 'warning');
+      return;
+    }
+
+    const alunoId = Number(alunoIdVal);
+    const aluno = window.db ? window.db.getAlunoById(alunoId) : null;
+
+    if (window.db && typeof window.db.addCompensacao === 'function') {
+      window.db.addCompensacao({
+        alunoId: alunoId,
+        alunoNome: aluno ? aluno.nome : 'Aluno',
+        turmaId: this.turmaId,
+        horasObrigacao: Number(horasVal),
+        dataLimite: dataLimiteVal,
+        motivoOrigem: motivoVal || 'Compensação de falta / ausência',
+        atividadeDescricao: descVal || 'Atividade de reposição',
+        tipoOrigem: 'FALTAS',
+        status: 'PENDENTE'
+      });
+      if (window.db.persist) window.db.persist();
+    }
+
+    window.dispatchEvent(new CustomEvent('renova:db-updated'));
+    if (window.app && typeof window.app.fecharModal === 'function') {
+      window.app.fecharModal('modalNovaCompensacao');
+    }
+    if (window.portalOrientadorController && typeof window.portalOrientadorController.renderCompensacoes === 'function') {
+      window.portalOrientadorController.renderCompensacoes();
+    }
+    if (window.app) {
+      window.app.mostrarToast('Compensação agendada e registrada com sucesso!', 'success');
+    }
+  }
+
+  aprovarCompensacao(id) {
+    const compId = Number(id);
+    if (!compId || !window.db) return;
+    const compensacoes = window.db.data.compensacoes || [];
+    const comp = compensacoes.find(c => Number(c.id) === compId);
+    if (comp) {
+      comp.status = 'CUMPRIDO';
+      comp.homologado = true;
+      comp.dataHomologacao = new Date().toISOString();
+      if (window.db.persist) window.db.persist();
+      window.dispatchEvent(new CustomEvent('renova:db-updated'));
+      if (window.app) window.app.mostrarToast(`Compensação #${compId} homologada com sucesso.`, 'success');
+      if (window.portalOrientadorController && typeof window.portalOrientadorController.renderCompensacoes === 'function') {
+        window.portalOrientadorController.renderCompensacoes();
+      }
+    }
+  }
+
   // Métodos legados para compatibilidade
   renderizarFiltros() {}
   setFiltro(tipo) {}
   carregarAlunosParaModalCompensacao() {}
-  abrirModalNovaCompensacao() {}
-  salvarNovaCompensacao() {}
 }
 
 window.compensacoesController = new CompensacoesController();

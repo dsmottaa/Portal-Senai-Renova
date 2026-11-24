@@ -572,7 +572,7 @@
           <!-- BARRA SUPERIOR DO CANVAS (PORTAL ACADÊMICO) -->
           <header class="canvas-header">
             <div class="canvas-header-left">
-              <h1 class="canvas-header-title">SENAI ROBERTO SIMONSEN</h1>
+              <h1 class="canvas-header-title" id="canvasHeaderPortalTitle">Portal Acadêmico</h1>
             </div>
 
             <div class="canvas-header-right">
@@ -925,8 +925,8 @@
             <div class="coord-portal-header-clean">
               <div class="coord-header-clean-left">
                 <div>
-                  <h2 class="coord-header-clean-title">SENAI ROBERTO SIMONSEN</h2>
-                  <p class="coord-header-clean-sub">Portal do Coordenador • Gestão Acadêmica Integrada</p>
+                  <h2 class="coord-header-clean-title">Portal do Coordenador</h2>
+                  <p class="coord-header-clean-sub">Gestão Acadêmica Integrada</p>
                 </div>
               </div>
               <div class="coord-header-actions">
@@ -1533,6 +1533,8 @@
                     <option value="">Selecione uma avaliação...</option>
                   </select>
 
+                  <span class="notas-filter-pill" id="pillAvaliacoesTotal">Avaliações na UC: <strong>0</strong></span>
+                  <span class="notas-filter-pill" id="pillAvaliacoesSomaPesos">Soma dos Pesos: <strong>0.0</strong></span>
                   <span class="notas-filter-pill" id="pillAvaliacaoTipo">Tipo: <strong>—</strong></span>
                   <span class="notas-filter-pill" id="pillAvaliacaoPeso">Peso: <strong>—</strong></span>
                   <span class="notas-filter-pill" id="pillAvaliacaoData">Data: <strong>—</strong></span>
@@ -2682,11 +2684,11 @@
               <div class="aluno-freq-page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 14px;">
                   <div>
-                    <h1 class="aluno-freq-main-title">SENAI ROBERTO SIMONSEN</h1>
+                    <h1 class="aluno-freq-main-title">Portal do Aluno</h1>
                     <div class="aluno-freq-breadcrumb">
-                      <span>Portal do Aluno</span>
+                      <span>Início</span>
                       <span class="sep">&gt;</span>
-                      <span class="active">Frequência e Aulas</span>
+                      <span class="active">Frequência e Notas</span>
                     </div>
                   </div>
                 </div>
@@ -3222,8 +3224,8 @@
               <div class="orientador-topbar">
                 <div class="orientador-titlebox">
                   <div>
-                    <h1 class="orientador-main-title">SENAI ROBERTO SIMONSEN</h1>
-                    <p class="orientador-main-sub">Portal dos Orientadores • Acompanhamento diário de assiduidade, escuta ativa e prioridades.</p>
+                    <h1 class="orientador-main-title">Portal dos Orientadores</h1>
+                    <p class="orientador-main-sub">Radar do Dia • Acompanhamento diário de assiduidade, escuta ativa e prioridades.</p>
                   </div>
                 </div>
 
@@ -3517,7 +3519,7 @@
               <div class="orientador-topbar">
                 <div class="orientador-titlebox">
                   <div>
-                    <h1 class="orientador-main-title">SENAI ROBERTO SIMONSEN</h1>
+                    <h1 class="orientador-main-title">Portal dos Orientadores</h1>
                     <p class="orientador-main-sub">Relatório Geral de Estudantes • Assiduidade, faltas, compensações e histórico de contato.</p>
                   </div>
                 </div>
@@ -4012,9 +4014,10 @@
             </select>
           </div>
           <div>
-            <label class="filter-label">Peso na Média</label>
-            <input type="number" step="0.5" id="inputNovaAvaliacaoPeso" class="filter-select" style="width:100%;"
-              value="3.0">
+            <label class="filter-label">Peso na Média *</label>
+            <input type="number" step="0.1" min="0.1" id="inputNovaAvaliacaoPeso" class="filter-select" style="width:100%;"
+              value="1.0" required>
+            <small style="color: var(--text-muted); font-size: 11px;">Obrigatório: peso &gt; 0</small>
           </div>
         </div>
         <div class="login-form-group">

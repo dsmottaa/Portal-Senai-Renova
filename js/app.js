@@ -2501,10 +2501,69 @@ class AppController {
     }
   }
 
+  getPerfilAtivoNotificacoes() {
+    if (window.auth && window.auth.currentUser) {
+      return (window.auth.currentUser.perfilAtivo || window.auth.currentUser.perfil || 'PROFESSOR').toUpperCase();
+    }
+    return 'PROFESSOR';
+  }
+
+  getNotificacoesPorPerfil() {
+    if (!window.db) return [];
+    const notifs = window.db.getNotificacoes ? window.db.getNotificacoes() : [];
+    const perfil = this.getPerfilAtivoNotificacoes();
+
+    return notifs.filter(n => {
+      if (n.perfilDestino) {
+        if (Array.isArray(n.perfilDestino)) return n.perfilDestino.includes(perfil) || n.perfilDestino.includes('TODOS');
+        if (n.perfilDestino === perfil || n.perfilDestino === 'TODOS') return true;
+      }
+      if (n.destinatario) {
+        if (n.destinatario === perfil || n.destinatario === 'TODOS') return true;
+      }
+
+      const texto = ((n.titulo || '') + ' ' + (n.mensagem || '') + ' ' + (n.autor || '')).toLowerCase();
+
+      if (perfil === 'COORDENADOR') {
+        if (n.tipo === 'SOLICITACAO' || texto.includes('fechamento') || texto.includes('coordena') || texto.includes('ptd') || texto.includes('atribui') || texto.includes('turma') || n.tipo === 'INFO' || texto.includes('bem-vindo')) {
+          return true;
+        }
+        return false;
+      }
+
+      if (perfil === 'PROFESSOR') {
+        if (n.tipo === 'APROVACAO' || n.tipo === 'DEVOLUCAO') return true;
+        if (texto.includes('devolv') || texto.includes('homologa') || texto.includes('aprovad') || texto.includes('diário') || texto.includes('atestado') || texto.includes('compensação') || texto.includes('prazo') || texto.includes('nota') || texto.includes('bem-vindo')) {
+          return true;
+        }
+        return false;
+      }
+
+      if (perfil === 'ORIENTADOR') {
+        if (texto.includes('atestado') || texto.includes('justific') || texto.includes('compensa') || texto.includes('falta') || texto.includes('orienta') || texto.includes('frequência') || texto.includes('contato') || texto.includes('bem-vindo')) {
+          return true;
+        }
+        return false;
+      }
+
+      if (perfil === 'ALUNO') {
+        if (texto.includes('fechamento de diário') || texto.includes('solicitou autorização') || texto.includes('devolvido para ajustes')) {
+          return false;
+        }
+        if (texto.includes('atestado') || texto.includes('compensa') || texto.includes('nota') || texto.includes('boletim') || texto.includes('material') || texto.includes('letivo') || texto.includes('bem-vindo') || n.tipo === 'INFO') {
+          return true;
+        }
+        return false;
+      }
+
+      return true;
+    });
+  }
+
   atualizarBadgeNotificacoes() {
     const badge = document.getElementById('headerNotifBadge');
     if (!badge || !window.db) return;
-    const notifs = window.db.getNotificacoes ? window.db.getNotificacoes() : [];
+    const notifs = this.getNotificacoesPorPerfil();
     const naoLidas = notifs.filter(n => !n.lida).length;
     if (naoLidas > 0) {
       badge.textContent = naoLidas > 9 ? '9+' : String(naoLidas);
@@ -2516,7 +2575,8 @@ class AppController {
 
   abrirModalNotificacoes() {
     if (!window.db) return;
-    const notifs = window.db.getNotificacoes();
+    const notifs = this.getNotificacoesPorPerfil();
+    const perfil = this.getPerfilAtivoNotificacoes();
 
     let existing = document.getElementById('modalNotificacoesAcad');
     if (existing) existing.remove();
@@ -2558,11 +2618,16 @@ class AppController {
             </svg>
             <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text-main);">Notificações Acadêmicas</h3>
             <span style="font-size: 11px; font-weight: 700; background: rgba(195, 22, 28, 0.1); color: #c3161c; padding: 2px 8px; border-radius: 12px;">${notifs.length}</span>
+            <span style="font-size: 11px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; font-weight: 600;">${perfil}</span>
           </div>
           <button type="button" class="modal-close-btn" onclick="document.getElementById('modalNotificacoesAcad').remove()">&times;</button>
         </div>
         <div class="modal-body" style="padding: 16px 20px; max-height: 420px; overflow-y: auto;">
-          ${notifs.map(n => {
+          ${notifs.length === 0 ? `
+            <div style="text-align:center; padding:32px 16px; color:#64748b; font-size:13px;">
+              Nenhuma notificação encontrada para o seu perfil no momento.
+            </div>
+          ` : notifs.map(n => {
             const conf = iconMap[n.tipo] || iconMap.INFO;
             return `
               <div style="display: flex; gap: 14px; padding: 12px; margin-bottom: 8px; border-radius: 10px; background: ${n.lida ? 'var(--bg-card-subtle)' : '#f8fafc'}; border: 1px solid ${n.lida ? 'transparent' : '#e2e8f0'}; position: relative;">
