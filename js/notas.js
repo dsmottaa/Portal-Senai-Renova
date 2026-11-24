@@ -125,14 +125,13 @@ class NotasController {
       const avatarSrc = aluno.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(aluno.nome)}&background=0284c7&color=fff`;
       
       const notaDb = window.db ? window.db.getNota(avaliacaoId, aluno.id) : null;
-      let notaValor;
-      if (this.notasLocais[aluno.id] !== undefined) {
-        notaValor = Number(this.notasLocais[aluno.id]);
+      let notaValor = '';
+      if (this.notasLocais[aluno.id] !== undefined && this.notasLocais[aluno.id] !== '') {
+        notaValor = Number(this.notasLocais[aluno.id]).toFixed(0);
       } else if (notaDb !== null && !isNaN(notaDb)) {
         // Se a nota no banco estiver em escala legada 0-30, converte para 0-100
-        notaValor = notaDb <= 30 ? Number(((notaDb / 30) * 100).toFixed(0)) : Number(notaDb);
-      } else {
-        notaValor = 85.0;
+        const convertida = notaDb <= 30 ? Number(((notaDb / 30) * 100).toFixed(0)) : Number(notaDb);
+        notaValor = convertida.toFixed(0);
       }
 
       return `
@@ -149,7 +148,7 @@ class NotasController {
             <span class="badge-comp registrado" style="font-size: 11.5px; padding: 3px 8px;">Ativo</span>
           </td>
           <td style="text-align: center;">
-            <input type="number" class="notas-input-field" value="${notaValor.toFixed(0)}" min="0" max="100" step="1" 
+            <input type="number" class="notas-input-field" value="${notaValor}" placeholder="0-100" min="0" max="100" step="1" 
               ${bloqueado ? 'disabled readonly title="Diário fechado ou aguardando aprovação"' : ''}
               style="width: 76px; text-align: center; font-weight: 700; ${bloqueado ? 'background:#f1f5f9;cursor:not-allowed;' : ''}"
               onchange="window.notasController.atualizarNotaAluno(${aluno.id}, this.value)">
@@ -353,6 +352,28 @@ class NotasController {
     window.app.mostrarToast('Notas de avaliação (0 a 100) consolidadas e salvas com sucesso!', 'success');
   }
 
+  abrirModalNovaAvaliacao() {
+    if (this.isDiarioBloqueado()) {
+      window.app.mostrarToast('O diário está fechado ou aguardando aprovação. Não é possível cadastrar novas avaliações.', 'warning');
+      return;
+    }
+    const inputTitulo = document.getElementById('inputNovaAvaliacaoTitulo');
+    const selectTipo = document.getElementById('selectNovaAvaliacaoTipo');
+    const inputPeso = document.getElementById('inputNovaAvaliacaoPeso');
+    const inputData = document.getElementById('inputNovaAvaliacaoData');
+    const inputMax = document.getElementById('inputNovaAvaliacaoValorMaximo');
+
+    if (inputTitulo) inputTitulo.value = '';
+    if (selectTipo) selectTipo.selectedIndex = 0;
+    if (inputPeso) inputPeso.value = '1.0';
+    if (inputData) inputData.value = new Date().toISOString().split('T')[0];
+    if (inputMax) inputMax.value = '100';
+
+    if (window.app && typeof window.app.abrirModal === 'function') {
+      window.app.abrirModal('modalNovaAvaliacao');
+    }
+  }
+
   salvarNovaAvaliacao() {
     if (this.isDiarioBloqueado()) {
       window.app.mostrarToast('O diário está fechado ou aguardando aprovação. Não é possível cadastrar novas avaliações.', 'warning');
@@ -375,10 +396,13 @@ class NotasController {
       return;
     }
 
+    const tId = Number(this.turmaId || (window.app && window.app.turmaAtiva ? window.app.turmaAtiva.id : 1));
+    const uId = Number(this.ucId || (window.app && window.app.turmaAtiva ? window.app.turmaAtiva.ucId : 1));
+
     if (window.db && window.db.addAvaliacao) {
       const novaAvaliacao = window.db.addAvaliacao({
-        turmaId: Number(this.turmaId),
-        ucId: Number(this.ucId),
+        turmaId: tId,
+        ucId: uId,
         titulo: titulo,
         tipo: tipo,
         peso: peso,
@@ -387,9 +411,13 @@ class NotasController {
       });
       if (novaAvaliacao && novaAvaliacao.id) {
         this.avaliacaoAtivaId = Number(novaAvaliacao.id);
+        this.notasLocais = {};
       }
       window.app.fecharModal('modalNovaAvaliacao');
-      window.app.mostrarToast(`Avaliação "${titulo}" cadastrada com sucesso!`, 'success');
+      window.app.mostrarToast(`Avaliação "${titulo}" (Peso: ${peso}) cadastrada com sucesso!`, 'success');
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('renova:db-updated'));
+      }
       this.renderizarAvaliacoes();
       if (window.app && window.app.renderizarHomeProfessor) window.app.renderizarHomeProfessor();
     }

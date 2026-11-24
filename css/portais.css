@@ -226,10 +226,16 @@
 }
 
 /* Ajustes de espaçamentos, paddings e larguras de colunas na tela Relatório Alunos */
+#tabSection_orientador_relatorio .table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 #tabSection_orientador_relatorio .radar-urgency-table {
   width: 100%;
-  min-width: 860px;
-  table-layout: fixed;
+  min-width: 960px;
+  table-layout: auto;
   border-collapse: collapse;
 }
 
@@ -237,7 +243,7 @@
   padding: 10px 12px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   color: #475569;
   background: #f8fafc;
   border-bottom: 2px solid #e2e8f0;
@@ -256,14 +262,14 @@
   line-height: 1.45;
 }
 
-#tabSection_orientador_relatorio .col-aluno { width: 22%; min-width: 180px; }
-#tabSection_orientador_relatorio .col-freq { width: 9%; min-width: 85px; text-align: center; }
-#tabSection_orientador_relatorio .col-faltas { width: 9%; min-width: 85px; text-align: center; }
-#tabSection_orientador_relatorio .col-atrasos { width: 8%; min-width: 75px; text-align: center; }
-#tabSection_orientador_relatorio .col-comp { width: 12%; min-width: 105px; text-align: center; }
-#tabSection_orientador_relatorio .col-contato { width: 13%; min-width: 120px; }
-#tabSection_orientador_relatorio .col-situacao { width: 11%; min-width: 95px; text-align: center; }
-#tabSection_orientador_relatorio .col-acoes { width: 16%; min-width: 160px; text-align: center; }
+#tabSection_orientador_relatorio .col-aluno { min-width: 190px; }
+#tabSection_orientador_relatorio .col-freq { min-width: 90px; text-align: center; }
+#tabSection_orientador_relatorio .col-faltas { min-width: 95px; text-align: center; }
+#tabSection_orientador_relatorio .col-atrasos { min-width: 80px; text-align: center; }
+#tabSection_orientador_relatorio .col-comp { min-width: 115px; text-align: center; }
+#tabSection_orientador_relatorio .col-contato { min-width: 135px; }
+#tabSection_orientador_relatorio .col-situacao { min-width: 100px; text-align: center; }
+#tabSection_orientador_relatorio .col-acoes { min-width: 190px; text-align: center; }
 
 .radar-aluno-cell {
   display: flex;

@@ -164,6 +164,7 @@ class CoordenadorController {
 
   renderListaTurmas(filtro) {
     filtro = filtro || 'EM_ANDAMENTO';
+    this._filtroAtualTurmas = filtro;
     const el = document.getElementById('coordTurmasLista');
     if (!el) return;
 
@@ -172,6 +173,11 @@ class CoordenadorController {
     });
     const atribuicoes = this._getAtribuicoes();
     const self = this;
+
+    if (!this.turmaSelecionadaId && turmas.length > 0) {
+      this.turmaSelecionadaId = turmas[0].id;
+    }
+    this.renderTurmaSelecionadaDetalhe();
 
     if (turmas.length === 0) {
       el.innerHTML = '<div class="coord-empty-state"><p>Nenhuma turma encontrada.</p></div>';
@@ -182,6 +188,7 @@ class CoordenadorController {
       const at = atribuicoes.find(function(a) { return a.turmaId === t.id; });
       const docente = at ? (window.db.data.usuarios || []).find(function(u) { return u.id === at.docenteId; }) : null;
       const sol = self._getSolicitacoes().find(function(s) { return s.turmaId === t.id; });
+      const isSelected = Number(self.turmaSelecionadaId) === Number(t.id);
       const statusDiario = sol
         ? (sol.status === 'APROVADO'
           ? '<span class="coord-badge badge-aprovado"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="display:inline-block; vertical-align:middle; margin-right:3px;"><polyline points="20 6 9 17 4 12"></polyline></svg> Fechado</span>'
@@ -193,7 +200,7 @@ class CoordenadorController {
 
       const nomeDocente = docente
         ? '<span style="font-size:12px; font-weight:600;">' + docente.nome.split(' ').slice(0,2).join(' ') + '</span>'
-        : '<button type="button" class="btn btn-sm btn-outline" onclick="window.coordenadorController.abrirModalAtribuirDocente(' + t.id + ')">+ Atribuir</button>';
+        : '<button type="button" class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.coordenadorController.abrirModalAtribuirDocente(' + t.id + ')">+ Atribuir</button>';
 
       // Cálculo de progresso do diário de classe
       const aulasTurma = (window.db.data.aulas || []).filter(function(a) { return a.turmaId === t.id && a.status === 'FINALIZADA'; });
@@ -201,7 +208,7 @@ class CoordenadorController {
       const metaAulas = 80;
       const pct = sol && sol.status === 'APROVADO' ? 100 : Math.min(100, Math.round((totalAulasDadas / metaAulas) * 100));
 
-      const progressoDiarioHtml = '<div style="min-width:130px;">'
+      const progressoDiarioHtml = '<div style="min-width:120px;">'
         + '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:11px;">'
         + statusDiario
         + '<span style="font-weight:700; color:var(--text-muted);">' + pct + '%</span>'
@@ -212,23 +219,108 @@ class CoordenadorController {
         + '<div style="font-size:10px; color:var(--text-muted); margin-top:3px;">' + totalAulasDadas + ' de ' + metaAulas + ' aulas lançadas</div>'
         + '</div>';
 
-      return '<tr>'
-        + '<td><div style="font-weight:600;font-size:13px;">' + t.codigo + '</div>'
-        + '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + t.nome.substring(0, 45) + '...</div></td>'
-        + '<td><span class="coord-badge badge-periodo">' + t.periodo + '</span></td>'
+      const rowClass = isSelected ? 'style="background:#f0f7ff; cursor:pointer;"' : 'style="cursor:pointer;"';
+
+      return '<tr ' + rowClass + ' onclick="window.coordenadorController.selecionarTurmaVisualizacao(' + t.id + ')">'
+        + '<td><div style="font-weight:700;font-size:13px;color:#005594;">' + t.codigo + (isSelected ? ' <span style="font-size:10px; background:#005594; color:#fff; padding:1px 6px; border-radius:4px;">Ativa</span>' : '') + '</div>'
+        + '<div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">' + (t.cursoNome || t.nome) + '</div></td>'
+        + '<td><span class="coord-badge badge-periodo">' + t.periodo + ' &bull; ' + (t.turno || 'Diurno') + '</span></td>'
         + '<td><strong>' + t.totalAlunos + '</strong></td>'
         + '<td>' + nomeDocente + '</td>'
         + '<td>' + progressoDiarioHtml + '</td>'
         + '<td>' + statusTurma + '</td>'
         + '<td style="text-align:right">'
-        + '<button type="button" class="btn btn-sm btn-outline" onclick="window.coordenadorController.abrirModalAtribuirDocente(' + t.id + ')" title="Gerenciar docente">Docente</button>'
+        + '<div style="display:inline-flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">'
+        + '<button type="button" class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.app.abrirDiarioComTurma(' + t.id + ')" title="Inspecionar Diário de Classe da Turma ' + t.codigo + '">'
+        + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>Diário'
+        + '</button>'
+        + '<button type="button" class="btn btn-sm btn-primary" onclick="event.stopPropagation(); window.app.abrirSinteseComTurma(' + t.id + ', ' + (t.ucId || 1) + ')" style="background:#005594; border-color:#005594;" title="Inspecionar Síntese da Turma ' + t.codigo + '">'
+        + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>Síntese'
+        + '</button>'
+        + '<button type="button" class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.coordenadorController.abrirModalAtribuirDocente(' + t.id + ')" title="Gerenciar docente">Docente</button>'
+        + '</div>'
         + '</td></tr>';
     }).join('');
 
     el.innerHTML = '<div class="coord-table-wrapper">'
       + '<table class="coord-table academic-table"><thead><tr>'
-      + '<th>Turma</th><th>Período</th><th>Alunos</th><th>Docente</th><th>Progresso do Diário</th><th>Status</th><th style="text-align:right">Ações</th>'
+      + '<th>Turma / Curso</th><th>Período & Turno</th><th>Alunos</th><th>Docente</th><th>Progresso do Diário</th><th>Status</th><th style="text-align:right">Ações Integradas</th>'
       + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  selecionarTurmaVisualizacao(turmaId) {
+    this.turmaSelecionadaId = turmaId ? Number(turmaId) : null;
+    this.renderTurmaSelecionadaDetalhe();
+    this.renderListaTurmas(this._filtroAtualTurmas || 'EM_ANDAMENTO');
+  }
+
+  renderTurmaSelecionadaDetalhe() {
+    const container = document.getElementById('coordTurmaDetalheContainer');
+    if (!container) return;
+
+    if (!this.turmaSelecionadaId) {
+      container.style.display = 'none';
+      container.innerHTML = '';
+      return;
+    }
+
+    const turma = (window.db.data.turmas || []).find(t => t.id === this.turmaSelecionadaId);
+    if (!turma) {
+      container.style.display = 'none';
+      return;
+    }
+
+    const ucs = window.db ? window.db.getUCsPorTurma(turma.id) : [];
+    const ucPrincipal = ucs[0] || { id: 1, nome: turma.nome };
+    const sintese = window.db ? window.db.getSinteseConsolidada(turma.id, ucPrincipal.id) : null;
+    const alunos = (sintese && sintese.alunos) ? sintese.alunos : [];
+    const freqs = alunos.filter(a => a.aluno.statusMatricula === 'ATIVO').map(a => a.freqPorcentagem);
+    const freqMedia = freqs.length ? (freqs.reduce((s, v) => s + v, 0) / freqs.length).toFixed(1) : '—';
+    const medias = alunos.filter(a => a.media > 0).map(a => a.media);
+    const mediaGeral = medias.length ? (medias.reduce((s, v) => s + v, 0) / medias.length).toFixed(1) : '—';
+
+    const statusBadge = turma.status === 'EM_ANDAMENTO'
+      ? '<span class="coord-badge badge-ativo" style="font-size:12px; padding:4px 10px;">Em Andamento</span>'
+      : '<span class="coord-badge badge-concluido" style="font-size:12px; padding:4px 10px;">Concluída</span>';
+
+    container.style.display = 'block';
+    container.innerHTML = `
+      <div class="coord-turma-selected-banner" style="background:#ffffff; border:1px solid #cbd5e1; border-left:5px solid #005594; border-radius:10px; padding:18px 20px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+              <span style="font-size:12px; font-weight:700; color:#005594; background:#f0f7ff; padding:2px 8px; border-radius:4px; border:1px solid #bae6fd;">TURMA EM FOCO</span>
+              ${statusBadge}
+            </div>
+            <h3 style="margin:0 0 4px 0; font-size:18px; font-weight:800; color:#0f172a;">${turma.codigo} • ${turma.nome}</h3>
+            <div style="font-size:13px; color:#475569; display:flex; gap:16px; flex-wrap:wrap; margin-top:6px;">
+              <span><strong>Curso:</strong> ${turma.cursoNome || turma.nome}</span>
+              <span><strong>Período:</strong> ${turma.periodo || '2026/1'}</span>
+              <span><strong>Turno:</strong> ${turma.turno || 'Diurno'}</span>
+              <span><strong>Alunos:</strong> ${turma.totalAlunos} matriculados</span>
+              <span><strong>Freq. Média:</strong> ${freqMedia}%</span>
+              <span><strong>Média Geral:</strong> ${mediaGeral}</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="btn btn-outline" onclick="window.app.abrirDiarioComTurma(${turma.id})" style="border-color:#005594; color:#005594; font-weight:700; padding:8px 14px; font-size:13px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              Acessar Diário
+            </button>
+            <button type="button" class="btn btn-primary" onclick="window.app.abrirSinteseComTurma(${turma.id}, ${ucPrincipal.id})" style="background:#005594; border-color:#005594; font-weight:700; padding:8px 14px; font-size:13px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px;"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+              Acessar Síntese
+            </button>
+            <button type="button" class="btn btn-outline" onclick="window.coordenadorController.abrirModalAtribuirDocente(${turma.id})" style="padding:8px 12px; font-size:13px;" title="Atribuir ou alterar docente">
+              Docente
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.coordenadorController.selecionarTurmaVisualizacao(null)" style="padding:8px 10px;" title="Fechar seleção">
+              &times;
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   // ─── PAINEL DE FECHAMENTO ────────────────────────────────────────────────────

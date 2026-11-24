@@ -25,14 +25,58 @@ class AssistenteIAController {
   }
 
   init() {
+    if (window.app && window.app.turmaAtiva) {
+      this.turmaId = Number(window.app.turmaAtiva.id || this.turmaId || 1);
+      this.ucId = Number(window.app.turmaAtiva.ucId || this.ucId || 1);
+    }
     this.carregarTurmasSelect();
     this.atualizarStatusChave();
+    this.atualizarChipsPorPerfil();
     this.configurarEventos();
 
     // Se não houver mensagens no histórico, insere a de boas-vindas
     if (this.mensagens.length === 0) {
       this.exibirMensagemBoasVindas();
     }
+  }
+
+  atualizarChipsPorPerfil() {
+    const row = document.querySelector('.assistente-chips-row');
+    if (!row) return;
+
+    const isCoord = this._modoCoord || (window.auth && window.auth.isCoordenacao && window.auth.isCoordenacao());
+    if (isCoord) {
+      row.innerHTML = `
+        <button type="button" class="assistente-chip-btn" data-action="medias_turmas">Média de todas as turmas</button>
+        <button type="button" class="assistente-chip-btn" data-action="radar_dia">Radar do Dia</button>
+        <button type="button" class="assistente-chip-btn" data-action="atestados_pendentes">Atestados Pendentes</button>
+        <button type="button" class="assistente-chip-btn" data-action="compensacoes_abertas">Compensações</button>
+        <button type="button" class="assistente-chip-btn" data-action="resumo">Resumo da turma</button>
+        <button type="button" class="assistente-chip-btn" data-action="risco">Alunos em risco</button>
+      `;
+    } else {
+      row.innerHTML = `
+        <button type="button" class="assistente-chip-btn" data-action="resumo">Resumo da Turma Ativa</button>
+        <button type="button" class="assistente-chip-btn" data-action="plano_aula">Plano de Aula & Conteúdos</button>
+        <button type="button" class="assistente-chip-btn" data-action="frequencia_faltas">Frequência e Faltas</button>
+        <button type="button" class="assistente-chip-btn" data-action="avaliacoes_medias">Avaliações e Médias</button>
+        <button type="button" class="assistente-chip-btn" data-action="risco">Alunos em Risco</button>
+        <button type="button" class="assistente-chip-btn" data-action="plano">Plano de Ação</button>
+        <button type="button" class="assistente-chip-btn" data-action="ausentes">Ausentes Hoje</button>
+        <button type="button" class="assistente-chip-btn" data-action="abaixo70">Notas &lt; 70</button>
+        <button type="button" class="assistente-chip-btn" data-action="freq80">Frequência &lt; 80%</button>
+        <button type="button" class="assistente-chip-btn" data-action="ocorrencias">Ocorrências</button>
+      `;
+    }
+
+    row.querySelectorAll('.assistente-chip-btn').forEach(btn => {
+      btn.dataset.bound = 'true';
+      btn.addEventListener('click', () => {
+        const acao = btn.getAttribute('data-action');
+        const rotulo = btn.textContent.trim();
+        this.executarOpcaoPredefinida(acao, rotulo);
+      });
+    });
   }
 
   // --- Carregamento de Turmas no Seletor ---
@@ -219,10 +263,14 @@ class AssistenteIAController {
     container.innerHTML = '';
     this.mensagens = [];
 
-    const isCoord = this._modoCoord || (window.auth && window.auth.isCoordenacao());
+    const isCoord = this._modoCoord || (window.auth && window.auth.isCoordenacao && window.auth.isCoordenacao());
+    const turma = window.db ? window.db.getTurmaById(this.turmaId) : null;
+    const ucs = window.db ? window.db.getUCsPorTurma(this.turmaId) : [];
+    const ucAtual = ucs.find(u => Number(u.id) === Number(this.ucId)) || ucs[0];
+
     const textoBoasVindas = isCoord
       ? 'Olá! Sou o Assistente Técnico Pedagógico da Coordenação SENAI. Posso analisar o desempenho de todas as turmas, índices de evasão, comparativos de frequência e relatórios operacionais. Como posso ajudar?'
-      : 'Olá! Sou o assistente inteligente do Portal do Docente SENAI. Pergunte sobre a turma, frequência, notas, observações ou riscos. Como posso ajudar?';
+      : `Olá! Sou o Assistente Pedagógico do Portal do Professor. Estou acompanhando a turma **${turma ? turma.codigo : 'Atual'}** (${ucAtual ? ucAtual.nome : 'Unidade Curricular'}).\n\nPosso ajudar com **plano de aula e conteúdos**, **frequência e faltas**, **avaliações e médias** ou sugestões de recuperação paralela. Como posso ajudar?`;
     this.adicionarMensagem('bot', textoBoasVindas, false);
   }
 
@@ -409,6 +457,11 @@ ${JSON.stringify(dadosContexto, null, 2)}`;
     const ocorrencias = window.db.getOcorrencias('TODAS');
     const compensacoes = window.db.getCompensacoes(this.turmaId);
     const justificativas = window.db.getJustificativas();
+    const avaliacoes = window.db.getAvaliacoesPorUC ? window.db.getAvaliacoesPorUC(this.turmaId, this.ucId) : [];
+    const aulasMinistradas = (window.db.data.aulas || [])
+      .filter(a => Number(a.turmaId) === Number(this.turmaId) && Number(a.ucId) === Number(this.ucId))
+      .slice(-6)
+      .map(a => ({ data: a.data, conteudo: a.conteudoMinistrado || a.conteudo || '' }));
 
     return {
       turma: {
@@ -424,8 +477,17 @@ ${JSON.stringify(dadosContexto, null, 2)}`;
         id: ucAtual?.id,
         codigo: ucAtual?.codigo,
         nome: ucAtual?.nome,
-        cargaHoraria: ucAtual?.cargaHoraria
+        cargaHoraria: ucAtual?.cargaHoraria,
+        conteudosProgramados: ucAtual?.conteudosProgramados || []
       },
+      aulasMinistradasRecentes: aulasMinistradas,
+      avaliacoesCadastradas: avaliacoes.map(a => ({
+        id: a.id,
+        titulo: a.titulo,
+        tipo: a.tipo,
+        peso: a.peso,
+        data: a.data
+      })),
       resumoAcademico: {
         totalAulasDadas: sintese?.totalAulasDadas,
         totalAlunosTurma: sintese?.totalAlunos,
@@ -460,6 +522,71 @@ ${JSON.stringify(dadosContexto, null, 2)}`;
     const acao = acaoTipo || this.inferirAcaoPorTexto(textoUsuario);
 
     switch (acao) {
+      // --- PROFESSOR: PLANO DE AULA & CONTEÚDOS ---
+      case 'plano_aula': {
+        const conteudosPtd = ucAtual && Array.isArray(ucAtual.conteudosProgramados) ? ucAtual.conteudosProgramados : [];
+        const aulasRecentes = (window.db.data.aulas || [])
+          .filter(a => Number(a.turmaId) === Number(this.turmaId) && Number(a.ucId) === Number(this.ucId))
+          .slice(-5);
+
+        let resp = `**Plano de Aula e Conteúdos — ${turma?.codigo || ''} (${ucAtual?.nome || 'UC'})**\n\n`;
+        if (conteudosPtd.length > 0) {
+          resp += `**Conteúdos Programados (PTD):**\n` + conteudosPtd.map((c, i) => `- ${i + 1}. **${c.tema || c.titulo || 'Tópico'}:** ${c.conteudo || c.descricao || ''}`).join('\n') + '\n\n';
+        } else {
+          resp += `Nenhum tópico do PTD cadastrado diretamente na UC ainda. Você pode editar ou importar o PTD no painel.\n\n`;
+        }
+        if (aulasRecentes.length > 0) {
+          resp += `**Últimas Aulas Ministradas:**\n` + aulasRecentes.map(a => `- **${a.data}:** ${a.conteudoMinistrado || a.conteudo || 'Registro de chamada sem descrição'}`).join('\n');
+        } else {
+          resp += `**Últimas Aulas Ministradas:** Ainda não há registros de conteúdo ministrado lançados no Diário para esta UC.`;
+        }
+        return resp;
+      }
+
+      // --- PROFESSOR: FREQUÊNCIA E FALTAS ---
+      case 'frequencia_faltas': {
+        const ativos = alunos.filter(a => a.aluno && a.aluno.statusMatricula === 'ATIVO');
+        const freqMedia = ativos.length ? (ativos.reduce((s, a) => s + Number(a.freqPorcentagem || 0), 0) / ativos.length).toFixed(1) : '100.0';
+        const criticos = ativos.filter(a => a.freqPorcentagem < 75);
+        const alerta = ativos.filter(a => a.freqPorcentagem >= 75 && a.freqPorcentagem < 85);
+
+        let resp = `**Panorama de Frequência e Faltas — ${turma?.codigo || ''}**\n\n`;
+        resp += `- **Frequência Média da Turma:** ${freqMedia}%\n`;
+        resp += `- **Total de Alunos Ativos:** ${ativos.length}\n`;
+        resp += `- **Em Situação Crítica (< 75%):** ${criticos.length} aluno(s)\n`;
+        resp += `- **Em Zona de Atenção (75% a 84,9%):** ${alerta.length} aluno(s)\n\n`;
+
+        if (criticos.length > 0) {
+          resp += `**Alunos Críticos (< 75%):**\n` + criticos.map(a => `- **${a.aluno.nome}** — ${a.freqPorcentagem.toFixed(1)}% (${a.faltas} falta(s))`).join('\n');
+        } else {
+          resp += `Todos os alunos ativos estão acima do limite mínimo regimental de 75% de presença.`;
+        }
+        return resp;
+      }
+
+      // --- PROFESSOR: AVALIAÇÕES E MÉDIAS DA UC ---
+      case 'avaliacoes_medias': {
+        const avals = window.db.getAvaliacoesPorUC ? window.db.getAvaliacoesPorUC(this.turmaId, this.ucId) : [];
+        const somaPesos = avals.reduce((s, a) => s + (Number(a.peso) || 1), 0);
+        const ativos = alunos.filter(a => a.aluno && a.aluno.statusMatricula === 'ATIVO');
+        const comMedia = ativos.filter(a => a.media > 0);
+        const mediaTurma = comMedia.length ? (comMedia.reduce((s, a) => s + a.media, 0) / comMedia.length).toFixed(1) : '—';
+        const abaixo70 = comMedia.filter(a => a.media < 70);
+
+        let resp = `**Avaliações e Médias — ${turma?.codigo || ''} (${ucAtual?.nome || 'UC'})**\n\n`;
+        resp += `- **Avaliações Cadastradas na UC:** ${avals.length} (Soma dos Pesos: ${somaPesos.toFixed(1)})\n`;
+        resp += `- **Média Geral da Turma:** ${mediaTurma} / 100\n`;
+        resp += `- **Abaixo da Média (< 70):** ${abaixo70.length} aluno(s)\n\n`;
+
+        if (avals.length > 0) {
+          resp += `**Instrumentos Avaliativos:**\n` + avals.map(a => `- **${a.titulo}** (${a.tipo}) • Peso: ${a.peso || 1} • Data: ${a.data || '—'}`).join('\n') + '\n\n';
+        }
+        if (abaixo70.length > 0) {
+          resp += `**Estudantes para Recuperação Paralela (< 70):**\n` + abaixo70.map(a => `- **${a.aluno.nome}** — Média: ${a.media.toFixed(1)}`).join('\n');
+        }
+        return resp;
+      }
+
       // --- COORDENADOR: MÉDIA DE TODAS AS TURMAS ---
       case 'medias_turmas': {
         const turmas = (window.db.data.turmas || []).filter(t => t.status === 'EM_ANDAMENTO');
@@ -882,6 +1009,9 @@ ${JSON.stringify(dadosContexto, null, 2)}`;
 
   inferirAcaoPorTexto(texto) {
     const t = texto.toLowerCase();
+    if (t.includes('conteúdo') || t.includes('conteudo') || t.includes('plano de aula') || t.includes('ptd') || t.includes('ministrad')) return 'plano_aula';
+    if (t.includes('avaliaç') || t.includes('avaliac') || t.includes('prova') || t.includes('peso')) return 'avaliacoes_medias';
+    if (t.includes('frequência e faltas') || t.includes('frequencia e faltas')) return 'frequencia_faltas';
     if (t.includes('resumo') || t.includes('geral') || t.includes('panorama')) return 'resumo';
     if (t.includes('risco') || t.includes('perigo') || t.includes('alerta')) return 'risco';
     if (t.includes('plano') || t.includes('ação') || t.includes('interven')) return 'plano';

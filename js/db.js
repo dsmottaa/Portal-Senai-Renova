@@ -3445,7 +3445,8 @@ class RenovaDB {
 
   // --- NOTAS E MÉDIAS ---
   getAvaliacoesPorUC(turmaId, ucId) {
-    return this.data.avaliacoes.filter(a => a.turmaId === Number(turmaId) && a.ucId === Number(ucId));
+    if (!this.data.avaliacoes) this.data.avaliacoes = [];
+    return this.data.avaliacoes.filter(a => Number(a.turmaId) === Number(turmaId) && Number(a.ucId) === Number(ucId));
   }
 
   addAvaliacao(avaliacao) {
@@ -3453,7 +3454,11 @@ class RenovaDB {
     const novoId = Math.max(0, ...this.data.avaliacoes.map(a => Number(a.id) || 0)) + 1;
     const novo = {
       id: novoId,
-      ...avaliacao
+      ...avaliacao,
+      turmaId: Number(avaliacao.turmaId),
+      ucId: Number(avaliacao.ucId),
+      peso: Number(avaliacao.peso) || 1.0,
+      notaMaxima: Number(avaliacao.notaMaxima) || 100
     };
     this.data.avaliacoes.push(novo);
     this.persist();

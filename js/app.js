@@ -1103,6 +1103,20 @@ class AppController {
   }
 
   voltarParaCursos() {
+    const perfil = (this.perfilAtivo || (window.auth && window.auth.currentUser && (window.auth.currentUser.perfilAtivo || window.auth.currentUser.perfil)) || 'PROFESSOR').toUpperCase();
+    if (perfil === 'COORDENADOR') {
+      this.navegarPara('coordenador');
+      return;
+    }
+    if (perfil === 'ALUNO') {
+      this.navegarAlunoPara('visaoGeral');
+      return;
+    }
+    if (perfil === 'ORIENTADOR') {
+      this.navegarPara('orientador_radar');
+      return;
+    }
+
     this.turmaAtiva = null;
     document.querySelectorAll('.breadcrumb-turma-btn').forEach(el => el.remove());
 
@@ -1308,12 +1322,21 @@ class AppController {
     // Botão "Solicitar Fechamento do Diário" (só para docentes na aba coordenador)
     var btnFech = document.getElementById('btnSolicitarFechamento');
     var btnNovaTurma = document.getElementById('btnNovaTurmaCoord');
+    var btnVoltarUCs = document.getElementById('btnDropdownVoltarUCs');
     if (btnFech) btnFech.style.display = (!isCoordenador && isProfessor) ? 'flex' : 'none';
     if (btnNovaTurma) btnNovaTurma.style.display = isCoordenador ? 'flex' : 'none';
+    if (btnVoltarUCs) btnVoltarUCs.style.display = (isProfessor && !isCoordenador && !isAluno && !isOrientador) ? 'flex' : 'none';
 
-    // Adaptar system prompt do assistente IA para coordenação
-    if (isCoordenador && window.assistenteIAController) {
-      window.assistenteIAController._modoCoord = true;
+    // Adaptar contexto e sugestões do assistente IA ao perfil ativo
+    if (window.assistenteIAController) {
+      window.assistenteIAController._modoCoord = !!isCoordenador;
+      if (this.turmaAtiva) {
+        window.assistenteIAController.turmaId = Number(this.turmaAtiva.id || 1);
+        window.assistenteIAController.ucId = Number(this.turmaAtiva.ucId || 1);
+      }
+      if (typeof window.assistenteIAController.atualizarChipsPorPerfil === 'function') {
+        window.assistenteIAController.atualizarChipsPorPerfil();
+      }
     }
 
     // Redirecionamento da aba inicial conforme o perfil ativo
@@ -1899,8 +1922,48 @@ class AppController {
 
   // --- Visualização Dinâmica de Notas e Boletim do Aluno ---
   
-  // --- Navegação Direta para Seções Dedicadas do Aluno (Etapa 3) ---
+  // --- Navegação Direta para Seções Dedicadas do Aluno ---
   navegarAlunoPara(area) {
+    if (area === 'materiais') {
+      this.navegarPara('materiais');
+    } else if (area === 'calendario') {
+      this.navegarPara('calendario');
+    } else {
+      // Abas dentro do próprio portal do aluno
+      this.navegarPara('aluno');
+
+      if (area === 'visaoGeral' || area === 'historicoAulas') {
+        this.alternarFreqTab(area);
+        const el = document.getElementById(`alunoFreqTab_${area}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (area === 'notas' || area === 'boletim') {
+        this.alternarFreqTab('notas');
+        const el = document.getElementById('alunoSubView_notas');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (area === 'boletim') {
+            el.style.transition = 'box-shadow 0.3s ease';
+            el.style.boxShadow = '0 0 0 3px rgba(0, 85, 148, 0.28)';
+            setTimeout(() => { el.style.boxShadow = ''; }, 1400);
+          }
+        }
+      } else if (area === 'atestados') {
+        if (window.portalAlunoController && typeof window.portalAlunoController.renderizarSecaoOrientacao === 'function') {
+          window.portalAlunoController.renderizarSecaoOrientacao();
+        }
+        const el = document.getElementById('alunoOrientacaoSecaoContainer');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          el.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
+          el.style.boxShadow = '0 0 0 3px rgba(2, 132, 199, 0.4)';
+          setTimeout(() => {
+            el.style.boxShadow = '';
+          }, 1500);
+        }
+      }
+    }
+
+    // Atualizar o item ativo exclusivo na barra lateral do aluno após navegarPara()
     const sidebar = document.getElementById('sidebarAlunoSection');
     if (sidebar) {
       sidebar.querySelectorAll('.nav-item').forEach(b => {
@@ -1909,45 +1972,6 @@ class AppController {
           b.classList.add('active');
         }
       });
-    }
-
-    if (area === 'materiais') {
-      this.navegarPara('materiais');
-      return;
-    }
-    if (area === 'calendario') {
-      this.navegarPara('calendario');
-      return;
-    }
-    if (area === 'boletim') {
-      this.abrirModalBoletimSemestre();
-      return;
-    }
-
-    // Abas do próprio portal do aluno
-    this.navegarPara('aluno');
-
-    if (area === 'visaoGeral' || area === 'historicoAulas') {
-      this.alternarFreqTab(area);
-      const el = document.getElementById(`alunoFreqTab_${area}`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else if (area === 'notas') {
-      this.alternarFreqTab('notas');
-      const el = document.getElementById('alunoSubView_notas');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else if (area === 'atestados') {
-      if (window.portalAlunoController && typeof window.portalAlunoController.renderizarSecaoOrientacao === 'function') {
-        window.portalAlunoController.renderizarSecaoOrientacao();
-      }
-      const el = document.getElementById('alunoOrientacaoSecaoContainer');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        el.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
-        el.style.boxShadow = '0 0 0 3px rgba(2, 132, 199, 0.4)';
-        setTimeout(() => {
-          el.style.boxShadow = '';
-        }, 1500);
-      }
     }
   }
 
@@ -3403,25 +3427,37 @@ class AppController {
     if (!el || !window.db) return;
 
     const eventos = window.db.getEventosCalendario() || [];
-    // Prioriza prazos de fechamento e semanas de avaliação
+    // Prioriza os próximos 4 prazos acadêmicos
     const proximos = eventos.slice(0, 4);
 
     el.innerHTML = proximos.map(ev => {
       const isFechamento = ev.categoria === 'Prazo de Fechamento de Notas';
-      const dt = ev.data ? ev.data.split('-').reverse().join('/') : '';
+      const partesData = ev.data ? ev.data.split('-') : [];
+      const dia = partesData[2] || '—';
+      const mesNum = parseInt(partesData[1] || '0', 10);
+      const meses = ['', 'JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+      const mesNome = meses[mesNum] || '';
+      const dataFormatada = partesData.length === 3 ? `${dia}/${partesData[1]}/${partesData[0]}` : '';
+
       return `
-        <div style="background: #ffffff; border: 1px solid ${isFechamento ? '#fca5a5' : '#e2e8f0'}; border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 6px;">
-              <span class="badge" style="font-size: 11px; font-weight: 700; background: ${isFechamento ? '#fee2e2' : '#f1f5f9'}; color: ${isFechamento ? '#991b1b' : '#0369a1'}; padding: 3px 8px; border-radius: 4px;">
+        <div class="agenda-prazo-item" style="background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid ${isFechamento ? '#dc2626' : '#0284c7'}; border-radius: 8px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.2s;">
+          <div style="background: ${isFechamento ? '#fef2f2' : '#f0f9ff'}; border: 1px solid ${isFechamento ? '#fecaca' : '#bae6fd'}; border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 48px; flex-shrink: 0;">
+            <div style="font-size: 16px; font-weight: 800; color: ${isFechamento ? '#b91c1c' : '#0369a1'}; line-height: 1;">${dia}</div>
+            <div style="font-size: 10px; font-weight: 700; color: ${isFechamento ? '#b91c1c' : '#0369a1'}; text-transform: uppercase; margin-top: 2px;">${mesNome}</div>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 2px;">
+              <span style="font-size: 11px; font-weight: 700; color: ${isFechamento ? '#b91c1c' : '#0369a1'}; text-transform: uppercase;">
                 ${isFechamento ? 'Prazo Institucional' : ev.categoria}
               </span>
-              <span style="font-size: 11px; font-weight: 600; color: #475569; background: #f8fafc; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0;">
-                ${dt}
-              </span>
+              <span style="font-size: 10.5px; color: #94a3b8;">${dataFormatada}</span>
             </div>
-            <div style="font-size: 13.5px; font-weight: 700; color: #0f172a; line-height: 1.35; margin-bottom: 4px;">${ev.titulo}</div>
-            <div style="font-size: 12px; color: #64748b; line-height: 1.4;">${ev.descricao || 'Data oficial do calendário acadêmico SENAI.'}</div>
+            <div style="font-size: 13px; font-weight: 700; color: #0f172a; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${ev.titulo}">
+              ${ev.titulo}
+            </div>
+            <div style="font-size: 11.5px; color: #64748b; line-height: 1.35; margin-top: 2px;">
+              ${ev.descricao || 'Data oficial do calendário acadêmico SENAI.'}
+            </div>
           </div>
         </div>
       `;

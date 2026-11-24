@@ -15,19 +15,19 @@
     rel="stylesheet">
 
   <!-- Estilos da Aplicação -->
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/login.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/configuracoes.css">
-  <link rel="stylesheet" href="css/relatorios.css">
-  <link rel="stylesheet" href="css/assistente.css">
-  <link rel="stylesheet" href="css/coordenador.css?v=10">
-  <link rel="stylesheet" href="css/profile-select.css">
-  <link rel="stylesheet" href="css/professor-home.css">
-  <link rel="stylesheet" href="css/figma-screens.css">
-  <link rel="stylesheet" href="css/aluno-frequencia.css">
-  <link rel="stylesheet" href="css/portais.css?v=12">
-  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/style.css?v=20261124">
+  <link rel="stylesheet" href="css/login.css?v=20261124">
+  <link rel="stylesheet" href="css/components.css?v=20261124">
+  <link rel="stylesheet" href="css/configuracoes.css?v=20261124">
+  <link rel="stylesheet" href="css/relatorios.css?v=20261124">
+  <link rel="stylesheet" href="css/assistente.css?v=20261124">
+  <link rel="stylesheet" href="css/coordenador.css?v=20261124">
+  <link rel="stylesheet" href="css/profile-select.css?v=20261124">
+  <link rel="stylesheet" href="css/professor-home.css?v=20261124">
+  <link rel="stylesheet" href="css/figma-screens.css?v=20261124">
+  <link rel="stylesheet" href="css/aluno-frequencia.css?v=20261124">
+  <link rel="stylesheet" href="css/portais.css?v=20261124">
+  <link rel="stylesheet" href="css/animations.css?v=20261124">
   <!-- jsPDF para exportação de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
@@ -187,7 +187,7 @@
   
           <!-- Baixar Boletim PDF com Escolha de Semestre -->
           <button type="button" class="nav-item" data-target-tab="aluno" data-target-area="boletim"
-            onclick="window.app.abrirModalBoletimSemestre()" title="Exportar Boletim Acadêmico em PDF com seleção de semestre">
+            onclick="window.app.navegarAlunoPara('boletim')" title="Acessar Boletim Acadêmico e Exportar PDF por Semestre">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
@@ -310,7 +310,7 @@
 
         <!-- Coluna Esquerda: Fotografia Arquitetônica da Fachada SENAI -->
         <aside class="login-cover-side" aria-label="Campus SENAI">
-          <img src="img/senai-building.jpg" alt="Fachada da Escola SENAI Roberto Simonsen" class="login-cover-image">
+          <img src="img/senai-building.jpg?v=20261124" alt="Fachada da Escola SENAI Roberto Simonsen" class="login-cover-image" loading="eager" decoding="sync">
           <div class="login-cover-overlay"></div>
           <div class="login-cover-content">
             <div class="login-cover-badge">
@@ -602,7 +602,7 @@
 
                 <!-- Menu Suspenso (Exatamente as 3 opções) -->
                 <div class="user-dropdown-menu" id="userDropdownMenu">
-                  <button type="button" class="user-dropdown-item"
+                  <button type="button" class="user-dropdown-item" id="btnDropdownVoltarUCs"
                     onclick="window.app.voltarParaCursos(); window.app.closeUserDropdown();">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
@@ -1028,6 +1028,8 @@
                     onclick="window.coordenadorController.filtrarTurmas('TODOS')">Todas</button>
                 </div>
               </div>
+              <!-- Card de Detalhe e Acesso Integrado da Turma Selecionada -->
+              <div id="coordTurmaDetalheContainer" style="display:none;"></div>
               <div id="coordTurmasLista"></div>
             </div>
 
@@ -1542,7 +1544,7 @@
 
                 <div>
                   <button type="button" class="btn-nova-avaliacao-figma"
-                    onclick="window.app.abrirModal('modalNovaAvaliacao')">
+                    onclick="window.notasController.abrirModalNovaAvaliacao()">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
                       stroke-width="2.5">
                       <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -2270,7 +2272,7 @@
               <div class="settings-profile-banner" id="settingsProfileBanner" style="display:none;">
                 <div class="banner-content">
                   <h1 class="banner-title">Meu perfil</h1>
-                  <p class="banner-subtitle">Atualize suas informações básicas de perfil. ✨</p>
+                  <p class="banner-subtitle">Atualize suas informações básicas de perfil.</p>
                   <div class="profile-info">
                     <div class="profile-avatar" id="profileAvatar">
                       <span class="avatar-initials" id="avatarInitials">NM</span>
@@ -2778,8 +2780,8 @@
                     </div>
                   </div>
 
-                  <!-- 2. Boletim de Notas (0 a 100) -->
-                  <div class="pastel-card-horizontal pastel-card-purple" onclick="window.app.alternarFreqTab('notas', true)" role="button" tabindex="0">
+                  <!-- 2. Boletim de Notas -->
+                  <div class="pastel-card-horizontal pastel-card-purple" onclick="window.app.navegarAlunoPara('notas')" role="button" tabindex="0">
                     <div class="pastel-card-icon-box">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -2789,7 +2791,7 @@
                       </svg>
                     </div>
                     <div class="pastel-card-content">
-                      <div class="pastel-card-title">Boletim de Notas (0 a 100)</div>
+                      <div class="pastel-card-title">Boletim de Notas</div>
                       <div class="pastel-card-desc">Detalhamento das avaliações, médias e situação final</div>
                     </div>
                     <div class="pastel-card-arrow">
@@ -2817,7 +2819,7 @@
                   </div>
 
                   <!-- 4. Baixar Boletim em PDF -->
-                  <div class="pastel-card-horizontal pastel-card-rose" onclick="window.app.abrirModalBoletimSemestre()" role="button" tabindex="0">
+                  <div class="pastel-card-horizontal pastel-card-rose" onclick="window.app.navegarAlunoPara('boletim')" role="button" tabindex="0">
                     <div class="pastel-card-icon-box">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -4874,22 +4876,22 @@
 
 
   <!-- Scripts da Aplicação -->
-  <script src="js/db.js?v=12"></script>
-  <script src="js/auth.js?v=12"></script>
-  <script src="js/configuracoes.js?v=12"></script>
-  <script src="js/diario.js?v=12"></script>
-  <script src="js/subturmas.js?v=12"></script>
-  <script src="js/ocorrencias.js?v=12"></script>
-  <script src="js/compensacoes.js?v=12"></script>
-  <script src="js/notas.js?v=12"></script>
-  <script src="js/sintese.js?v=12"></script>
-  <script src="js/relatorios.js?v=12"></script>
-  <script src="js/assistente.js?v=12"></script>
-  <script src="js/coordenador.js?v=12"></script>
-  <script src="js/orientador-comp.js?v=12"></script>
-  <script src="js/portal-orientador.js?v=12"></script>
-  <script src="js/portal-aluno.js?v=12"></script>
-  <script src="js/app.js?v=12"></script>
+  <script src="js/db.js?v=20261124"></script>
+  <script src="js/auth.js?v=20261124"></script>
+  <script src="js/configuracoes.js?v=20261124"></script>
+  <script src="js/diario.js?v=20261124"></script>
+  <script src="js/subturmas.js?v=20261124"></script>
+  <script src="js/ocorrencias.js?v=20261124"></script>
+  <script src="js/compensacoes.js?v=20261124"></script>
+  <script src="js/notas.js?v=20261124"></script>
+  <script src="js/sintese.js?v=20261124"></script>
+  <script src="js/relatorios.js?v=20261124"></script>
+  <script src="js/assistente.js?v=20261124"></script>
+  <script src="js/coordenador.js?v=20261124"></script>
+  <script src="js/orientador-comp.js?v=20261124"></script>
+  <script src="js/portal-orientador.js?v=20261124"></script>
+  <script src="js/portal-aluno.js?v=20261124"></script>
+  <script src="js/app.js?v=20261124"></script>
 
   <!-- Modal Selecionar Semestre ao Gerar Boletim Oficial -->
   <div id="modalBoletimSemestre" class="modal-overlay" style="display:none;">

@@ -194,18 +194,24 @@ class PortalAlunoController {
     const inpFim = document.getElementById('alunoAtestadoDataFim');
     const inpMotivo = document.getElementById('alunoAtestadoMotivo');
     const inpDescricao = document.getElementById('alunoAtestadoDescricao');
+    const inpArquivo = document.getElementById('alunoAtestadoArquivo');
 
     if (inpInicio) inpInicio.value = dataHoje;
     if (inpFim) inpFim.value = dataHoje;
     if (inpMotivo) inpMotivo.selectedIndex = 0;
     if (inpDescricao) inpDescricao.value = '';
+    if (inpArquivo) inpArquivo.value = '';
 
     modal.style.display = 'flex';
+    modal.classList.add('open');
   }
 
   fecharModalSolicitarJustificativa() {
     const modal = document.getElementById('modalEnviarAtestadoAluno');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('open');
+    }
   }
 
   salvarSolicitacaoJustificativa() {
@@ -228,6 +234,16 @@ class PortalAlunoController {
 
     if (!dataInicio) {
       if (window.app) window.app.mostrarToast('Informe a data de início da ausência.', 'warning');
+      return;
+    }
+
+    if (dataFim && dataFim < dataInicio) {
+      if (window.app) window.app.mostrarToast('A data final não pode ser anterior à data de início.', 'warning');
+      return;
+    }
+
+    if (!descricao || descricao.length < 3) {
+      if (window.app) window.app.mostrarToast('Descreva brevemente o comprovante ou motivo da solicitação.', 'warning');
       return;
     }
 

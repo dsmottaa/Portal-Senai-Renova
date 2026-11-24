@@ -31,6 +31,7 @@ class DiarioController {
 
     const dataPicker = document.getElementById('inputDiarioDataPicker');
     if (dataPicker) {
+      dataPicker.removeAttribute('min');
       if (!dataPicker.value) dataPicker.value = this.dataAula;
       else this.dataAula = dataPicker.value;
     }
@@ -38,6 +39,24 @@ class DiarioController {
     this.atualizarHeaderInfo();
     this.carregarChamada();
     this.alternarAba(this.abaAtiva);
+  }
+
+  isDataDentroTolerancia7Dias(dataStr) {
+    if (!dataStr) return true;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const partes = String(dataStr).split('-');
+    if (partes.length !== 3) return true;
+    const alvo = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+    alvo.setHours(0, 0, 0, 0);
+    const diffDias = Math.floor((hoje.getTime() - alvo.getTime()) / (1000 * 60 * 60 * 24));
+    return diffDias >= 0 && diffDias <= 7;
+  }
+
+  isDataPermitidaEdicao(dataStr) {
+    if (this.isDiarioBloqueado()) return false;
+    // Permite lançar, recolocar ou ajustar faltas em datas atuais e de até 7 dias atrás
+    return true;
   }
 
   isDiarioBloqueado() {
@@ -141,20 +160,21 @@ class DiarioController {
 
         if (status === 'F') {
           btnClass = 'falta';
-          btnText = 'F ✕';
+          btnText = 'F';
           title = 'Falta (F) • Clique para alternar para Justificada (J)';
           faltasNestaChamada++;
         } else if (status === 'J') {
           btnClass = 'justificada';
-          btnText = 'J ⚖️';
+          btnText = 'J';
           title = 'Falta Justificada / Compensada (J) • Clique para alternar para Presente (P)';
           presencasNestaChamada++;
         } else if (status === 'D') {
           btnClass = 'justificada';
-          btnText = 'D 📜';
+          btnText = 'D';
           title = 'Dispensa com Atestado Homologado pela Orientação (D) • Clique para alternar para Presente (P)';
           presencasNestaChamada++;
         } else {
+          btnText = 'P';
           presencasNestaChamada++;
         }
 
@@ -330,6 +350,12 @@ class DiarioController {
     this.frequencias = {};
     this.carregarChamada();
     this.carregarConteudoDaData();
+    if (!this.isDiarioBloqueado() && this.isDataDentroTolerancia7Dias(novaData)) {
+      const hojeStr = new Date().toISOString().split('T')[0];
+      if (novaData !== hojeStr && window.app && typeof window.app.mostrarToast === 'function') {
+        window.app.mostrarToast('Data retroativa dentro do prazo de 7 dias: lançamento e ajuste de faltas liberados.', 'info');
+      }
+    }
   }
 
   carregarConteudoDaData() {
