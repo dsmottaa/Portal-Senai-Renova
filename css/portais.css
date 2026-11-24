@@ -253,13 +253,13 @@
 }
 
 #tabSection_orientador_relatorio .radar-urgency-table td {
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-size: 12.5px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
   white-space: normal;
   word-break: break-word;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 #tabSection_orientador_relatorio .col-aluno { min-width: 190px; }

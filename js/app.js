@@ -327,7 +327,18 @@ class AppController {
     if (wrap) wrap.classList.remove('open');
   }
 
+  _atualizarVisibilidadeVoltarUCs() {
+    const user = window.auth ? window.auth.getUser() : null;
+    const perfil = (this.perfilAtivo || (user && (user.perfilAtivo || user.perfil)) || 'PROFESSOR').toUpperCase();
+    const isProfessor = perfil === 'PROFESSOR';
+    const btnVoltarUCs = document.getElementById('btnDropdownVoltarUCs');
+    if (btnVoltarUCs) {
+      btnVoltarUCs.style.display = isProfessor ? 'flex' : 'none';
+    }
+  }
+
   abrirMeuPerfil() {
+    this._atualizarVisibilidadeVoltarUCs();
     if ((this.perfilAtivo === 'ALUNO') || (window.auth && window.auth.isAluno && window.auth.isAluno())) {
       this.abrirModalPerfilAluno();
       return;
@@ -396,7 +407,10 @@ class AppController {
     }
 
     // Carregar perfil se necessário
-    if (tab === 'perfil') this.carregarDadosPerfil();
+    if (tab === 'perfil') {
+      this._atualizarVisibilidadeVoltarUCs();
+      this.carregarDadosPerfil();
+    }
     if (tab === 'aparencia' && window.configuracoes) window.configuracoes.atualizarUI();
   }
 
@@ -1922,6 +1936,27 @@ class AppController {
 
   // --- Visualização Dinâmica de Notas e Boletim do Aluno ---
   
+  alternarSubTabNotas(subTab) {
+    this.alternarNotasTab(subTab === 'boletim' ? 'boletim' : 'tabela');
+    const el = document.getElementById('alunoSubView_notas');
+    if (el) {
+      el.style.display = 'block';
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  exportarBoletimSemestreAtual() {
+    const sem = this.alunoSemestreAtivo;
+    const semestreLabel = sem === 1 || sem === '1' ? '2026/1' : (sem === 2 || sem === '2' ? '2026/2' : 'Todos');
+    this.semestreBoletimSelecionado = semestreLabel;
+    if (window.relatoriosController && typeof window.relatoriosController.exportarPDFAluno === 'function') {
+      window.relatoriosController.exportarPDFAluno('aluno_boletim', { semestre: semestreLabel });
+      this.mostrarToast(`Boletim (${semestreLabel}) gerado com sucesso!`, 'success');
+    } else {
+      this.abrirModalBoletimSemestre();
+    }
+  }
+
   // --- Navegação Direta para Seções Dedicadas do Aluno ---
   navegarAlunoPara(area) {
     if (area === 'materiais') {
@@ -1933,19 +1968,17 @@ class AppController {
       this.navegarPara('aluno');
 
       if (area === 'visaoGeral' || area === 'historicoAulas') {
-        this.alternarFreqTab(area);
-        const el = document.getElementById(`alunoFreqTab_${area}`);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else if (area === 'notas' || area === 'boletim') {
-        this.alternarFreqTab('notas');
+        this.alternarFreqTab(area, true);
+      } else if (area === 'notas') {
+        this.alternarFreqTab('notas', true);
+      } else if (area === 'boletim') {
+        this.alternarFreqTab('notas', true);
+        this.alternarSubTabNotas('boletim');
         const el = document.getElementById('alunoSubView_notas');
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          if (area === 'boletim') {
-            el.style.transition = 'box-shadow 0.3s ease';
-            el.style.boxShadow = '0 0 0 3px rgba(0, 85, 148, 0.28)';
-            setTimeout(() => { el.style.boxShadow = ''; }, 1400);
-          }
+          el.style.transition = 'box-shadow 0.3s ease';
+          el.style.boxShadow = '0 0 0 3px rgba(0, 85, 148, 0.28)';
+          setTimeout(() => { el.style.boxShadow = ''; }, 1400);
         }
       } else if (area === 'atestados') {
         if (window.portalAlunoController && typeof window.portalAlunoController.renderizarSecaoOrientacao === 'function') {
@@ -1953,6 +1986,7 @@ class AppController {
         }
         const el = document.getElementById('alunoOrientacaoSecaoContainer');
         if (el) {
+          el.style.display = 'block';
           el.scrollIntoView({ behavior: 'smooth', block: 'start' });
           el.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
           el.style.boxShadow = '0 0 0 3px rgba(2, 132, 199, 0.4)';

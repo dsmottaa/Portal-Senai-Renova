@@ -1353,39 +1353,39 @@ class PortalOrientadorController {
 
       return `
         <tr>
-          <td>
-            <strong style="color:#0f172a; font-size:13px; display:block;">${al.nome}</strong>
-            <span style="font-size:11px; color:#64748b;">${al.ra || 'RA' + String(al.id).padStart(7, '0')}</span>
+          <td style="white-space: normal; word-break: break-word; vertical-align: middle;">
+            <strong style="color:#0f172a; font-size:13px; display:block; line-height:1.35;">${al.nome}</strong>
+            <span style="font-size:11px; color:#64748b; display:block; margin-top:2px;">${al.ra || 'RA' + String(al.id).padStart(7, '0')}</span>
           </td>
-          <td class="center" style="font-weight:700; font-size:13px; color:${item.freq < 75 ? '#e11d48' : (item.freq < 85 ? '#d97706' : '#16a34a')};">
+          <td class="center" style="font-weight:700; font-size:13px; vertical-align: middle; color:${item.freq < 75 ? '#e11d48' : (item.freq < 85 ? '#d97706' : '#16a34a')};">
             ${item.freq}%
           </td>
-          <td class="center" style="font-weight:700; color:${item.faltas > 0 ? '#b91c1c' : '#475569'};">
+          <td class="center" style="font-weight:700; vertical-align: middle; color:${item.faltas > 0 ? '#b91c1c' : '#475569'};">
             ${item.faltas}
           </td>
-          <td class="center" style="font-weight:600; color:${item.atrasos >= 5 ? '#c2410c' : '#475569'};">
+          <td class="center" style="font-weight:600; vertical-align: middle; color:${item.atrasos >= 5 ? '#c2410c' : '#475569'};">
             ${item.atrasos}
           </td>
-          <td class="center">
+          <td class="center" style="vertical-align: middle; white-space: normal;">
             ${item.compensacoes > 0
-              ? `<span class="badge" style="background:#fef3c7; color:#92400e; font-weight:700; padding:3px 8px; border-radius:4px;">${item.compensacoes} pendente(s)</span>`
-              : '<span style="color:#16a34a; font-size:11.5px;">Em dia</span>'}
+              ? `<span class="badge" style="background:#fef3c7; color:#92400e; font-weight:700; padding:3px 8px; border-radius:4px; display:inline-block;">${item.compensacoes} pendente(s)</span>`
+              : '<span style="color:#16a34a; font-size:11.5px; font-weight:600;">Em dia</span>'}
           </td>
-          <td>${contatoTxt}</td>
-          <td class="center">
-            <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-weight:700; padding:4px 9px; border-radius:6px; font-size:11px;">
+          <td style="white-space: normal; word-break: break-word; vertical-align: middle;">${contatoTxt}</td>
+          <td class="center" style="vertical-align: middle;">
+            <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-weight:700; padding:4px 9px; border-radius:6px; font-size:11px; display:inline-block;">
               ${badgeLabel}
             </span>
           </td>
-          <td class="center">
-            <div style="display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
-              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato(${al.id}, '${al.nome.replace(/'/g, "\\'")}')" style="font-size:11px; padding:3px 8px;" title="Registrar Contato">
+          <td class="center" style="vertical-align: middle;">
+            <div style="display:flex; gap:4px; justify-content:center; align-items:center; flex-wrap:wrap;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato(${al.id}, '${al.nome.replace(/'/g, "\\'")}')" style="font-size:11px; padding:4px 8px; line-height:1.2;" title="Registrar Contato">
                 Contato
               </button>
-              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalAgendarCompensacao(${al.id}, '${al.nome.replace(/'/g, "\\'")}')" style="font-size:11px; padding:3px 8px;" title="Agendar Compensação">
+              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalAgendarCompensacao(${al.id}, '${al.nome.replace(/'/g, "\\'")}')" style="font-size:11px; padding:4px 8px; line-height:1.2;" title="Agendar Compensação">
                 Compensar
               </button>
-              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirProntuario(${al.id})" style="font-size:11px; padding:3px 8px; background:#f8fafc;" title="Ver Prontuário">
+              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirProntuario(${al.id})" style="font-size:11px; padding:4px 8px; line-height:1.2; background:#f8fafc;" title="Ver Prontuário">
                 Prontuário
               </button>
             </div>
