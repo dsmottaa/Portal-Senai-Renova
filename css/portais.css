@@ -226,34 +226,51 @@
 }
 
 /* Ajustes de espaçamentos, paddings e larguras de colunas na tela Relatório Alunos */
+#tabSection_orientador_relatorio .radar-kpi-grid {
+  gap: 16px !important;
+  margin-bottom: 24px !important;
+}
+
+#tabSection_orientador_relatorio .radar-urgency-card {
+  padding: 22px 24px !important;
+}
+
+#tabSection_orientador_relatorio .radar-urgency-header {
+  gap: 16px !important;
+  margin-bottom: 20px !important;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
 #tabSection_orientador_relatorio .table-responsive {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
 }
 
 #tabSection_orientador_relatorio .radar-urgency-table {
   width: 100%;
-  min-width: 960px;
+  min-width: 1120px;
   table-layout: auto;
   border-collapse: collapse;
 }
 
 #tabSection_orientador_relatorio .radar-urgency-table th {
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.5px;
   color: #475569;
   background: #f8fafc;
   border-bottom: 2px solid #e2e8f0;
-  white-space: normal;
-  word-break: break-word;
-  line-height: 1.45;
+  white-space: nowrap;
+  line-height: 1.4;
 }
 
 #tabSection_orientador_relatorio .radar-urgency-table td {
-  padding: 12px 14px;
+  padding: 13px 14px;
   font-size: 12.5px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
@@ -262,14 +279,30 @@
   line-height: 1.4;
 }
 
-#tabSection_orientador_relatorio .col-aluno { min-width: 190px; }
-#tabSection_orientador_relatorio .col-freq { min-width: 90px; text-align: center; }
+#tabSection_orientador_relatorio .col-aluno { min-width: 210px; }
+#tabSection_orientador_relatorio .col-turma { min-width: 145px; }
+#tabSection_orientador_relatorio .col-freq { min-width: 95px; text-align: center; }
 #tabSection_orientador_relatorio .col-faltas { min-width: 95px; text-align: center; }
-#tabSection_orientador_relatorio .col-atrasos { min-width: 80px; text-align: center; }
-#tabSection_orientador_relatorio .col-comp { min-width: 115px; text-align: center; }
-#tabSection_orientador_relatorio .col-contato { min-width: 135px; }
-#tabSection_orientador_relatorio .col-situacao { min-width: 100px; text-align: center; }
-#tabSection_orientador_relatorio .col-acoes { min-width: 190px; text-align: center; }
+#tabSection_orientador_relatorio .col-atrasos { min-width: 85px; text-align: center; }
+#tabSection_orientador_relatorio .col-comp { min-width: 130px; text-align: center; }
+#tabSection_orientador_relatorio .col-contato { min-width: 145px; }
+#tabSection_orientador_relatorio .col-situacao { min-width: 120px; text-align: center; }
+#tabSection_orientador_relatorio .col-acoes { min-width: 225px; text-align: center; }
+
+#tabSection_orientador_relatorio .relatorio-acoes-wrap {
+  display: inline-flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+#tabSection_orientador_relatorio .relatorio-acoes-wrap .btn {
+  font-size: 11px;
+  padding: 5px 9px;
+  line-height: 1.2;
+}
 
 .radar-aluno-cell {
   display: flex;

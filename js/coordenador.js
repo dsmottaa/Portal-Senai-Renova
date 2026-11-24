@@ -1044,39 +1044,10 @@ class CoordenadorController {
             const at = atribuicoes.find(a => a.turmaId === turma.id);
             const docenteTurma = at ? (window.db.data.usuarios || []).find(u => u.id === at.docenteId) : docenteTitular;
 
-            // Dados consolidados da Síntese
-            const sintese = window.db.getSinteseConsolidada(turma.id, uc.id);
-            const alunos = (sintese && sintese.alunos) ? sintese.alunos : [];
-            const totalAtivos = alunos.filter(a => a.aluno.statusMatricula === 'ATIVO').length;
-
-            const medias = alunos.filter(a => a.media > 0).map(a => a.media);
-            const mediaGeral = medias.length ? (medias.reduce((s, v) => s + v, 0) / medias.length).toFixed(1) : '—';
-            const mediaNum = medias.length ? Number(mediaGeral) : 0;
-
-            const freqs = alunos.filter(a => a.aluno.statusMatricula === 'ATIVO').map(a => a.freqPorcentagem);
-            const freqMedia = freqs.length ? (freqs.reduce((s, v) => s + v, 0) / freqs.length).toFixed(1) : '—';
-
-            const emRisco = alunos.filter(a => a.aluno.statusMatricula === 'ATIVO' && (a.media < 70 || a.freqPorcentagem < 75)).length;
-
-            const sol = self._getSolicitacoes().find(s => s.turmaId === turma.id);
-            const statusDiarioBadge = sol
-              ? (sol.status === 'APROVADO'
-                ? '<span class="coord-badge badge-aprovado">Diário Fechado</span>'
-                : '<span class="coord-badge badge-aguardando">Aguardando Homologação</span>')
-              : '<span class="coord-badge badge-aberto">Diário Aberto</span>';
-
-            const mediaColor = mediaNum >= 70 ? 'var(--color-success, #16a34a)' : (mediaNum >= 50 ? 'var(--color-warning, #d97706)' : 'var(--color-danger, #dc2626)');
-
             return `
               <div class="coord-turma-card">
                 <div class="turma-card-top">
-                  <div>
-                    <div class="turma-card-code">${turma.codigo}</div>
-                    <div class="turma-card-periodo"><span class="coord-badge badge-periodo">${turma.periodo}</span> &bull; ${turma.totalAlunos} Alunos</div>
-                  </div>
-                  <div>
-                    ${statusDiarioBadge}
-                  </div>
+                  <div class="turma-card-code">${turma.codigo}</div>
                 </div>
 
                 <div class="turma-card-docente">
@@ -1084,32 +1055,12 @@ class CoordenadorController {
                   <strong>${docenteTurma ? docenteTurma.nome.split(' ').slice(0, 2).join(' ') : '— Não atribuído —'}</strong>
                 </div>
 
-                <!-- Síntese compacta inline -->
-                <div class="turma-sintese-inline">
-                  <div class="sintese-inline-item">
-                    <span class="kpi-num" style="color: ${mediaColor}; font-weight: 800;">${mediaGeral || '—'}</span>
-                    <span class="kpi-txt">Média</span>
-                  </div>
-                  <div class="sintese-inline-item">
-                    <span class="kpi-num">${freqMedia}%</span>
-                    <span class="kpi-txt">Freq.</span>
-                  </div>
-                  <div class="sintese-inline-item ${emRisco > 0 ? 'kpi-alerta' : ''}">
-                    <span class="kpi-num">${emRisco}</span>
-                    <span class="kpi-txt">Risco</span>
-                  </div>
-                  <div class="sintese-inline-item">
-                    <span class="kpi-num">${totalAtivos}</span>
-                    <span class="kpi-txt">Ativos</span>
-                  </div>
-                </div>
-
                 <div class="turma-card-actions">
                   <button type="button" class="btn btn-sm btn-outline" onclick="window.app.abrirDiarioComTurma(${turma.id})" title="Inspecionar Chamada em Modo Observador">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Ver Diário
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Ver Diário
                   </button>
                   <button type="button" class="btn btn-sm btn-primary" onclick="window.app.abrirSinteseComTurma(${turma.id}, ${uc.id})" title="Inspecionar Síntese em Modo Observador">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg> Ver Síntese
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg> Ver Síntese
                   </button>
                 </div>
               </div>

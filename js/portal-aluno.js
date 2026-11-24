@@ -304,6 +304,15 @@ class PortalAlunoController {
         window.dispatchEvent(new CustomEvent('justificativa-atualizada', { detail: payload }));
       }
 
+      if (window.portalOrientadorController) {
+        if (typeof window.portalOrientadorController.renderizarJustificativas === 'function') {
+          window.portalOrientadorController.renderizarJustificativas();
+        }
+        if (typeof window.portalOrientadorController.atualizarTudo === 'function') {
+          window.portalOrientadorController.atualizarTudo();
+        }
+      }
+
       if (window.app) {
         window.app.mostrarToast('Atestado enviado com sucesso! Aguardando homologação da Orientação Educacional.', 'success');
         if (typeof window.app.renderizarPortalAluno === 'function') {

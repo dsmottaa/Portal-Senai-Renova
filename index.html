@@ -5,6 +5,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SENAI ROBERTO SIMONSEN</title>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      root.classList.remove('dark');
+      root.setAttribute('data-theme', 'light');
+    })();
+  </script>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23c3161c'/><text x='16' y='23' font-size='22' font-family='sans-serif' font-weight='900' fill='white' text-anchor='middle'>S</text></svg>">
 
@@ -15,19 +22,19 @@
     rel="stylesheet">
 
   <!-- Estilos da Aplicação -->
-  <link rel="stylesheet" href="css/style.css?v=20261124-2">
-  <link rel="stylesheet" href="css/login.css?v=20261124-2">
-  <link rel="stylesheet" href="css/components.css?v=20261124-2">
-  <link rel="stylesheet" href="css/configuracoes.css?v=20261124-2">
-  <link rel="stylesheet" href="css/relatorios.css?v=20261124-2">
-  <link rel="stylesheet" href="css/assistente.css?v=20261124-2">
-  <link rel="stylesheet" href="css/coordenador.css?v=20261124-2">
-  <link rel="stylesheet" href="css/profile-select.css?v=20261124-2">
-  <link rel="stylesheet" href="css/professor-home.css?v=20261124-2">
-  <link rel="stylesheet" href="css/figma-screens.css?v=20261124-2">
-  <link rel="stylesheet" href="css/aluno-frequencia.css?v=20261124-2">
-  <link rel="stylesheet" href="css/portais.css?v=20261124-2">
-  <link rel="stylesheet" href="css/animations.css?v=20261124-2">
+  <link rel="stylesheet" href="css/style.css?v=20261124-4">
+  <link rel="stylesheet" href="css/login.css?v=20261124-4">
+  <link rel="stylesheet" href="css/components.css?v=20261124-4">
+  <link rel="stylesheet" href="css/configuracoes.css?v=20261124-4">
+  <link rel="stylesheet" href="css/relatorios.css?v=20261124-4">
+  <link rel="stylesheet" href="css/assistente.css?v=20261124-4">
+  <link rel="stylesheet" href="css/coordenador.css?v=20261124-4">
+  <link rel="stylesheet" href="css/profile-select.css?v=20261124-4">
+  <link rel="stylesheet" href="css/professor-home.css?v=20261124-4">
+  <link rel="stylesheet" href="css/figma-screens.css?v=20261124-4">
+  <link rel="stylesheet" href="css/aluno-frequencia.css?v=20261124-4">
+  <link rel="stylesheet" href="css/portais.css?v=20261124-4">
+  <link rel="stylesheet" href="css/animations.css?v=20261124-4">
   <!-- jsPDF para exportação de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
@@ -310,7 +317,7 @@
 
         <!-- Coluna Esquerda: Fotografia Arquitetônica da Fachada SENAI -->
         <aside class="login-cover-side" aria-label="Campus SENAI">
-          <img src="img/senai-building.jpg?v=20261124-2" alt="Fachada da Escola SENAI Roberto Simonsen" class="login-cover-image" loading="eager" decoding="sync">
+          <img src="img/fachada-senai.jpg?v=20261124-4" alt="Fachada da Escola SENAI Roberto Simonsen" class="login-cover-image" loading="eager" decoding="sync">
           <div class="login-cover-overlay"></div>
           <div class="login-cover-content">
             <div class="login-cover-badge">
@@ -829,7 +836,7 @@
 
               <!-- Card: Próximos Prazos Oficiais da Coordenação (Destaque Fechamento de Notas) -->
               <div class="prof-dash-card" style="margin-top:20px; width:100%;" id="profCardProximosPrazos">
-                <div class="prof-dash-card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div class="prof-dash-card-header" onclick="window.app.togglePrazosOficiaisInicio()" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; cursor:pointer; user-select:none;" title="Clique para expandir ou recolher os próximos prazos">
                   <div style="display:flex; align-items:center; gap:8px;">
                     <div style="width:32px; height:32px; border-radius:8px; background:rgba(225,29,72,0.1); display:flex; align-items:center; justify-content:center;">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2.2">
@@ -841,14 +848,22 @@
                     </div>
                     <div>
                       <span class="prof-dash-card-title" style="display:block; font-size:14px; font-weight:700; color:#0f172a;">Próximos Prazos Oficiais da Coordenação</span>
-                      <span style="font-size:12px; color:#64748b;">Acompanhamento das datas limites institucionais e fechamento de médias</span>
+                      <span style="font-size:12px; color:#64748b;">Clique para visualizar as datas limites institucionais e fechamento de médias</span>
                     </div>
                   </div>
-                  <button type="button" class="btn btn-outline btn-sm" onclick="window.app.navegarPara('calendario')" style="font-size:12px; padding:6px 12px; display:inline-flex; align-items:center; gap:6px;">
-                    Ver Calendário Oficial &rarr;
-                  </button>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <button type="button" id="btnTogglePrazosOficiais" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); window.app.togglePrazosOficiaisInicio()" style="font-size:12px; padding:6px 12px; display:inline-flex; align-items:center; gap:6px;">
+                      <span>Mostrar Prazos</span>
+                      <svg id="iconTogglePrazosOficiais" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="transition: transform 0.2s;">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); window.app.navegarPara('calendario')" style="font-size:12px; padding:6px 12px; display:inline-flex; align-items:center; gap:6px;">
+                      Ver Calendário Oficial &rarr;
+                    </button>
+                  </div>
                 </div>
-                <div id="profPrazosOficiaisContainer" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-top:16px;">
+                <div id="profPrazosOficiaisContainer" style="display:none; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-top:16px;">
                   <!-- Preenchido dinamicamente via JS -->
                 </div>
               </div>
@@ -939,15 +954,6 @@
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                   </svg>
                   Plano de Trabalho Docente (PTD)
-                </button>
-                <button type="button" class="btn btn-outline btn-sm" id="btnExportarPlanoAulaCoord"
-                  onclick="window.coordenadorController.exportarPlanoDeAula()" title="Exportar Plano de Trabalho Docente (PTD) em JSON">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  Exportar PTD (JSON)
                 </button>
                 <button type="button" class="btn btn-outline btn-sm"
                   onclick="window.coordenadorController.abrirModalSolicitarFechamento()" id="btnSolicitarFechamento"
@@ -1581,7 +1587,7 @@
                         <th>FOTO / NOME DO ALUNO</th>
                         <th>MATRÍCULA</th>
                         <th style="text-align: center;">STATUS</th>
-                        <th style="text-align: center; width: 120px;">AV1 (0 - 30,0)</th>
+                        <th id="thNotaAvaliacaoAtiva" style="text-align: center; width: 150px;">NOTA (0 - 100,0)</th>
                         <th style="text-align: center;">SITUAÇÃO</th>
                       </tr>
                     </thead>
@@ -1593,11 +1599,11 @@
 
                 <!-- Rodapé com Resumo da Avaliação -->
                 <div class="notas-table-footer">
-                  <div class="resumo-stats-row">
-                    <span class="resumo-stats-item">Média da Turma: <strong>24,1</strong></span>
-                    <span class="resumo-stats-item">Maior Nota: <strong>29,5</strong></span>
-                    <span class="resumo-stats-item">Menor Nota: <strong>14,0</strong></span>
-                    <span class="resumo-stats-item">Acima da Média: <strong>14 (87,5%)</strong></span>
+                  <div class="resumo-stats-row" id="avaliacoesFooterStats">
+                    <span class="resumo-stats-item">Média da Turma: <strong>—</strong></span>
+                    <span class="resumo-stats-item">Maior Nota: <strong>—</strong></span>
+                    <span class="resumo-stats-item">Menor Nota: <strong>—</strong></span>
+                    <span class="resumo-stats-item">Lançadas: <strong>0</strong></span>
                   </div>
                 </div>
               </div>
@@ -1605,13 +1611,35 @@
 
             <!-- SUB-ABA 2: MÉDIAS -->
             <div id="notasSubViewMedias" style="display: none;">
+              <!-- Painel de Seleção de Avaliações e Modo de Cálculo -->
+              <div class="notas-medias-config-card">
+                <div class="notas-medias-config-header">
+                  <div>
+                    <h3 class="notas-medias-config-title">Avaliações para Composição da Média</h3>
+                    <p class="notas-medias-config-subtitle">Selecione quais avaliações entram no cálculo e escolha o método de processamento.</p>
+                  </div>
+                  <div class="notas-medias-modo-box">
+                    <label for="selectModoCalculoMedias" class="notas-medias-modo-label">Modo de Cálculo:</label>
+                    <select id="selectModoCalculoMedias" class="diario-select-clean"
+                      onchange="window.notasController.onModoCalculoChange(this.value)">
+                      <option value="ponderada">Média Ponderada</option>
+                      <option value="aritmetica">Média Aritmética</option>
+                      <option value="soma">Soma Simples</option>
+                    </select>
+                  </div>
+                </div>
+                <div id="mediasAvaliacoesCheckboxes" class="notas-medias-checkboxes-grid">
+                  <!-- Preenchido dinamicamente via JS -->
+                </div>
+              </div>
+
               <!-- Barra de controles da sub-aba Médias -->
               <div class="notas-medias-controls">
                 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                   <input type="text" class="notas-search-input" placeholder="Buscar por aluno..."
                     id="inputBuscarAlunoMedias" oninput="window.notasController.filtrarMedias(this.value)">
                   <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569;">
-                    <label>Subturma:</label>
+                    <label for="selectMediasSubturma">Subturma:</label>
                     <select class="diario-select-clean" id="selectMediasSubturma"
                       onchange="window.notasController.onSubturmaChange(this.value)">
                       <option value="TODOS">Todos</option>
@@ -1620,26 +1648,31 @@
                     </select>
                   </div>
                 </div>
-                <button type="button" class="btn-recalcular-medias"
-                  onclick="window.notasController.recalcularMedias()">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                  <span>Recalcular Médias</span>
-                </button>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <button type="button" class="btn-recalcular-medias"
+                    onclick="window.notasController.selecionarTodasAvaliacoes(true)">
+                    <span>Selecionar Todas</span>
+                  </button>
+                  <button type="button" class="btn-recalcular-medias"
+                    onclick="window.notasController.recalcularMedias()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Recalcular Médias</span>
+                  </button>
+                </div>
               </div>
 
               <div class="notas-table-card">
                 <div class="table-responsive">
                   <table class="notas-figma-table table-senai-header">
-                    <thead>
+                    <thead id="mediasFigmaTableHead">
                       <tr>
                         <th style="width: 45px; text-align: center;">Nº</th>
                         <th>FOTO / NOME DO ALUNO</th>
                         <th>MATRÍCULA</th>
-                        <th style="text-align: center;">MÉDIA CALCULADA</th>
-                        <th style="text-align: center;">MÉDIA DO PROFESSOR</th>
-                        <th style="text-align: center;">SITUAÇÃO</th>
+                        <th style="text-align: center;">SOMA</th>
+                        <th style="text-align: center;">MÉDIA FINAL</th>
                       </tr>
                     </thead>
                     <tbody id="mediasFigmaTableBody">
@@ -1649,13 +1682,10 @@
                 </div>
                 <div class="notas-table-footer">
                   <div class="resumo-stats-row" id="mediasFooterStats">
-                    <span class="resumo-stats-item">Média da Turma: <strong>8,2</strong></span>
-                    <span class="resumo-stats-item">Aprovados: <strong>14 (87,5%)</strong></span>
-                    <span class="resumo-stats-item">Reprovados: <strong>2 (12,5%)</strong></span>
+                    <span class="resumo-stats-item">Média Final da Turma: <strong>—</strong></span>
+                    <span class="resumo-stats-item">Avaliações Selecionadas: <strong>0</strong></span>
                   </div>
                   <div class="diario-footer-actions">
-                    <button type="button" class="btn btn-secondary"
-                      onclick="window.notasController.limparMedias()">Limpar</button>
                     <button type="button" class="btn btn-primary" style="background: #16a34a; border-color: #15803d;"
                       onclick="window.notasController.salvarMedias()">
                       Salvar Médias
@@ -2136,7 +2166,7 @@
                     </div>
                   </div>
                   <h3 class="meu-perfil-nome" id="perfilNomeExibido">Prof. Mariana</h3>
-                  <span class="meu-perfil-cargo-badge">Professor</span>
+                  <span class="meu-perfil-cargo-badge" id="perfilCargoExibido">Professor</span>
 
                   <div class="meu-perfil-contatos">
                     <div class="meu-perfil-contato-item">
@@ -2208,6 +2238,7 @@
                           <option value="Professor Auxiliar">Professor Auxiliar</option>
                           <option value="Coordenador">Coordenador</option>
                           <option value="Orientador">Orientador</option>
+                          <option value="Aluno">Aluno</option>
                         </select>
                       </div>
                       <div class="meu-perfil-field">
@@ -2555,18 +2586,9 @@
                   <div class="assistente-turma-selector">
                     <label>Turma:</label>
                     <select id="selectTurmaAssistente">
-                      <option value="1">TDS-2026-1A - Técnico em Desenvolvimento de Sistemas - 1º Termo A</option>
+                      <option value="">— Selecione uma turma —</option>
                     </select>
                   </div>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btnConfigGroq" onclick="window.assistenteIAController.abrirModalGroqKey()">
-                    <svg width="15" height="15" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M16 2L4 8v16l12 6 12-6V8L16 2zm0 2.5l9 4.5v13l-9 4.5-9-4.5v-13L16 4.5z" stroke="currentColor" stroke-width="2" fill="none"/>
-                      <path d="M16 8.5v15" stroke="currentColor" stroke-width="1.5"/>
-                      <path d="M16 8.5l-9 4.5" stroke="currentColor" stroke-width="1.5"/>
-                      <path d="M16 8.5l9 4.5" stroke="currentColor" stroke-width="1.5"/>
-                    </svg>
-                    <span>Chave Groq API</span>
-                  </button>
                   <button type="button" class="btn btn-secondary btn-sm btn-limpar-conversa" onclick="window.assistenteIAController.limparConversa()">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="3 6 5 6 21 6"></polyline>
@@ -2714,7 +2736,7 @@
                           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                           <circle cx="12" cy="7" r="4"></circle>
                         </svg>
-                        <span>Estudante: <strong id="alunoHeaderEstudanteNome">Yasmin Ribeiro Costa</strong></span>
+                        <span>Estudante: <strong id="alunoHeaderEstudanteNome">Pedro Henrique</strong></span>
                       </div>
                       <span class="aluno-course-meta-sep">|</span>
                       <div class="aluno-course-meta-item">
@@ -2838,9 +2860,6 @@
                 </div>
               </div>
 
-              <!-- Seção de Acompanhamento com a Orientação Educacional (Atestados & Compensações) -->
-              <div id="alunoOrientacaoSecaoContainer"></div>
-
               <!-- Abas Internas: Visão Geral / Histórico de Aulas / Boletim -->
               <div class="aluno-freq-tabs-nav">
                 <button type="button" class="aluno-freq-tab-button active" id="tabBtnAluno_visaoGeral"
@@ -2958,17 +2977,6 @@
                       </tbody>
                     </table>
                   </div>
-                </div>
-
-                <!-- Painel de Disciplinas Matriculadas (Frequência, Avaliações 0-100, Progresso e Status Oficial) -->
-                <div style="margin-top: 24px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                    <div>
-                      <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0;">Disciplinas Matriculadas</h3>
-                      <p style="font-size: 12.5px; color: var(--text-muted); margin: 2px 0 0;">Acompanhamento detalhado de frequência, avaliações, médias e situação de fechamento.</p>
-                    </div>
-                  </div>
-                  <div id="alunoDisciplinasContainer" class="aluno-disciplinas-grid"></div>
                 </div>
 
               </div>
@@ -3232,11 +3240,6 @@
                 </div>
 
                 <div class="orientador-topbar-actions">
-                  <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato()" title="Registrar contato telefônico, presencial ou WhatsApp com aluno ou responsável">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                    <span>+ Registrar Contato</span>
-                  </button>
-
                   <button type="button" class="btn btn-primary btn-sm" onclick="window.portalOrientadorController.abrirModalNovoAtendimento()" title="Iniciar ou agendar atendimento psicopedagógico/qualidade de vida">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"></path></svg>
                     <span>Novo Atendimento</span>
@@ -3335,11 +3338,6 @@
                 </div>
 
                 <div class="orientador-topbar-actions">
-                  <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato()" title="Registrar contato telefônico, presencial ou WhatsApp com aluno ou responsável">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                    <span>+ Registrar Contato</span>
-                  </button>
-
                   <button type="button" class="btn btn-primary btn-sm" onclick="window.portalOrientadorController.abrirModalNovoAtendimento()" title="Iniciar ou agendar atendimento psicopedagógico/qualidade de vida">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"></path></svg>
                     <span>Novo Atendimento</span>
@@ -3407,11 +3405,6 @@
                 </div>
 
                 <div class="orientador-topbar-actions">
-                  <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato()" title="Registrar contato telefônico, presencial ou WhatsApp com aluno ou responsável">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                    <span>+ Registrar Contato</span>
-                  </button>
-
                   <button type="button" class="btn btn-primary btn-sm" onclick="window.portalOrientadorController.abrirModalNovoAtendimento()" title="Iniciar ou agendar atendimento psicopedagógico/qualidade de vida">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"></path></svg>
                     <span>Novo Atendimento</span>
@@ -3482,11 +3475,6 @@
                 </div>
 
                 <div class="orientador-topbar-actions">
-                  <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato()" title="Registrar contato telefônico, presencial ou WhatsApp com aluno ou responsável">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                    <span>+ Registrar Contato</span>
-                  </button>
-
                   <button type="button" class="btn btn-primary btn-sm" onclick="window.portalOrientadorController.abrirModalNovoAtendimento()" title="Iniciar ou agendar atendimento psicopedagógico/qualidade de vida">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"></path></svg>
                     <span>Novo Atendimento</span>
@@ -3608,6 +3596,7 @@
                     <thead>
                       <tr>
                         <th class="col-aluno">ESTUDANTE</th>
+                        <th class="col-turma">TURMA</th>
                         <th class="col-freq center">FREQUÊNCIA</th>
                         <th class="col-faltas center">FALTAS S/ JUST.</th>
                         <th class="col-atrasos center">ATRASOS</th>
@@ -4001,36 +3990,40 @@
       </div>
       <div class="modal-body">
         <div class="login-form-group">
-          <label class="filter-label">Título da Avaliação</label>
+          <label class="filter-label" for="inputNovaAvaliacaoTitulo">Nome da Avaliação *</label>
           <input type="text" id="inputNovaAvaliacaoTitulo" class="filter-select" style="width:100%;"
-            placeholder="Ex: Prova Teórica 2 ou Projeto Integrador...">
+            placeholder="Ex: Prova Teórica 1, Atividade Prática ou Projeto Integrador..." required>
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;" class="login-form-group">
           <div>
-            <label class="filter-label">Tipo</label>
+            <label class="filter-label" for="selectNovaAvaliacaoTipo">Tipo *</label>
             <select id="selectNovaAvaliacaoTipo" class="filter-select" style="width:100%;">
+              <option value="PRATICA">Prática</option>
+              <option value="TEORICA">Teórica</option>
+              <option value="PROJETO">Projeto</option>
               <option value="PROVA">Prova Escrita</option>
-              <option value="PROJETO">Projeto Prático</option>
-              <option value="PRATICA">Laboratório</option>
+              <option value="TRABALHO">Trabalho</option>
               <option value="SEMINARIO">Seminário</option>
             </select>
           </div>
           <div>
-            <label class="filter-label">Peso na Média *</label>
+            <label class="filter-label" for="inputNovaAvaliacaoData">Data *</label>
+            <input type="date" id="inputNovaAvaliacaoData" class="filter-select" style="width:100%;" required>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;" class="login-form-group">
+          <div>
+            <label class="filter-label" for="inputNovaAvaliacaoPeso">Peso na Média *</label>
             <input type="number" step="0.1" min="0.1" id="inputNovaAvaliacaoPeso" class="filter-select" style="width:100%;"
               value="1.0" required>
             <small style="color: var(--text-muted); font-size: 11px;">Obrigatório: peso &gt; 0</small>
           </div>
-        </div>
-        <div class="login-form-group">
-          <label class="filter-label">Data da Aplicação</label>
-          <input type="date" id="inputNovaAvaliacaoData" class="filter-select" style="width:100%;" value="2026-10-22">
-        </div>
-        <div class="login-form-group">
-          <label class="filter-label">Nota Máxima (Escala)</label>
-          <input type="number" id="inputNovaAvaliacaoValorMaximo" class="filter-select" style="width:100%;" value="100"
-            min="10" max="1000" step="10">
-          <small style="color: var(--text-muted); font-size: 11px;">Padrão: 100 (escala 0-100)</small>
+          <div>
+            <label class="filter-label" for="inputNovaAvaliacaoValorMaximo">Nota Máxima *</label>
+            <input type="number" id="inputNovaAvaliacaoValorMaximo" class="filter-select" style="width:100%;" value="100"
+              min="1" max="1000" step="0.5" required>
+            <small style="color: var(--text-muted); font-size: 11px;">Limite máximo permitido no lançamento</small>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -4333,15 +4326,7 @@
         </div>
 
       </div>
-      <div class="modal-footer" style="justify-content:space-between; display:flex; gap:8px;">
-        <button type="button" class="btn btn-outline" onclick="window.coordenadorController.exportarPtdUcAtual()" title="Baixar PTD estruturado em JSON">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Exportar PTD (JSON)
-        </button>
+      <div class="modal-footer" style="justify-content:flex-end; display:flex; gap:8px;">
         <div style="display:flex; gap:8px;">
           <button type="button" class="btn btn-secondary"
             onclick="window.app.fecharModal('modalCoordenadorPTD')">Cancelar</button>
@@ -4767,7 +4752,7 @@
         <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #f1f5f9;">
           <img id="modalAlunoFoto" src="https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=150" alt="Foto da Aluna" style="width:68px; height:68px; border-radius:50%; object-fit:cover; border:3px solid #e0f2fe; box-shadow:0 2px 6px rgba(0,0,0,0.08);">
           <div style="flex:1;">
-            <h4 id="modalAlunoNome" style="font-size:17px; font-weight:800; color:#0f172a; margin:0 0 4px;">Yasmin Ribeiro Costa</h4>
+            <h4 id="modalAlunoNome" style="font-size:17px; font-weight:800; color:#0f172a; margin:0 0 4px;">Pedro Henrique</h4>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               <span style="font-size:12px; font-weight:700; color:#0284c7; background:#e0f2fe; padding:2px 8px; border-radius:6px;" id="modalAlunoRA">RA2026052</span>
               <span style="font-size:12px; font-weight:700; color:#15803d; background:#dcfce7; padding:2px 8px; border-radius:6px;" id="modalAlunoStatus">Matrícula Ativa</span>
@@ -4795,7 +4780,7 @@
           </div>
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; grid-column:span 2;">
             <span style="font-size:10.5px; font-weight:700; color:#64748b; text-transform:uppercase; display:block;">E-mail Institucional</span>
-            <span id="modalAlunoEmail" style="font-size:12.5px; font-weight:600; color:#0284c7;">yasmin.costa@aluno.senai.br</span>
+            <span id="modalAlunoEmail" style="font-size:12.5px; font-weight:600; color:#0284c7;">pedro.henrique@aluno.senai.br</span>
           </div>
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; grid-column:span 2;">
             <span style="font-size:10.5px; font-weight:700; color:#64748b; text-transform:uppercase; display:block;">Vigência do Período Letivo</span>
@@ -4876,22 +4861,22 @@
 
 
   <!-- Scripts da Aplicação -->
-  <script src="js/db.js?v=20261124-2"></script>
-  <script src="js/auth.js?v=20261124-2"></script>
-  <script src="js/configuracoes.js?v=20261124-2"></script>
-  <script src="js/diario.js?v=20261124-2"></script>
-  <script src="js/subturmas.js?v=20261124-2"></script>
-  <script src="js/ocorrencias.js?v=20261124-2"></script>
-  <script src="js/compensacoes.js?v=20261124-2"></script>
-  <script src="js/notas.js?v=20261124-2"></script>
-  <script src="js/sintese.js?v=20261124-2"></script>
-  <script src="js/relatorios.js?v=20261124-2"></script>
-  <script src="js/assistente.js?v=20261124-2"></script>
-  <script src="js/coordenador.js?v=20261124-2"></script>
-  <script src="js/orientador-comp.js?v=20261124-2"></script>
-  <script src="js/portal-orientador.js?v=20261124-2"></script>
-  <script src="js/portal-aluno.js?v=20261124-2"></script>
-  <script src="js/app.js?v=20261124-2"></script>
+  <script src="js/db.js?v=20261124-4"></script>
+  <script src="js/auth.js?v=20261124-4"></script>
+  <script src="js/configuracoes.js?v=20261124-4"></script>
+  <script src="js/diario.js?v=20261124-4"></script>
+  <script src="js/subturmas.js?v=20261124-4"></script>
+  <script src="js/ocorrencias.js?v=20261124-4"></script>
+  <script src="js/compensacoes.js?v=20261124-4"></script>
+  <script src="js/notas.js?v=20261124-4"></script>
+  <script src="js/sintese.js?v=20261124-4"></script>
+  <script src="js/relatorios.js?v=20261124-4"></script>
+  <script src="js/assistente.js?v=20261124-4"></script>
+  <script src="js/coordenador.js?v=20261124-4"></script>
+  <script src="js/orientador-comp.js?v=20261124-4"></script>
+  <script src="js/portal-orientador.js?v=20261124-4"></script>
+  <script src="js/portal-aluno.js?v=20261124-4"></script>
+  <script src="js/app.js?v=20261124-4"></script>
 
   <!-- Modal Selecionar Semestre ao Gerar Boletim Oficial -->
   <div id="modalBoletimSemestre" class="modal-overlay" style="display:none;">
@@ -4932,7 +4917,7 @@
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-top:14px; font-size:12px; color:#475569;">
           <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
             <span>Estudante:</span>
-            <strong id="modalBoletimNomeAluno">Yasmin Ribeiro Costa</strong>
+            <strong id="modalBoletimNomeAluno">Pedro Henrique</strong>
           </div>
           <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
             <span>Matrícula / RA:</span>

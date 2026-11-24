@@ -264,12 +264,25 @@ CREATE TABLE IF NOT EXISTS `avaliacoes` (
     `turma_id` INT NOT NULL,
     `uc_id` INT NOT NULL,
     `titulo` VARCHAR(150) NOT NULL,
-    `tipo` ENUM('PROVA', 'TRABALHO', 'SEMINARIO', 'PRATICA', 'PROJETO') NOT NULL DEFAULT 'PROVA',
-    `peso` DECIMAL(4,2) NOT NULL DEFAULT 1.00,
+    `tipo` ENUM('PROVA', 'TEORICA', 'TRABALHO', 'SEMINARIO', 'PRATICA', 'PROJETO') NOT NULL DEFAULT 'PRATICA',
+    `peso` DECIMAL(5,2) NOT NULL DEFAULT 1.00,
     `data_avaliacao` DATE NOT NULL,
-    `valor_maximo` DECIMAL(4,2) NOT NULL DEFAULT 10.00,
+    `valor_maximo` DECIMAL(6,2) NOT NULL DEFAULT 100.00,
     CONSTRAINT `fk_avaliacoes_turma` FOREIGN KEY (`turma_id`) REFERENCES `turmas` (`id`),
     CONSTRAINT `fk_avaliacoes_uc` FOREIGN KEY (`uc_id`) REFERENCES `unidades_curriculares` (`id`)
+) ENGINE=InnoDB;
+
+-- 20b. Tabela: config_medias_uc (Persistência de seleção de avaliações e modo de cálculo)
+CREATE TABLE IF NOT EXISTS `config_medias_uc` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `turma_id` INT NOT NULL,
+    `uc_id` INT NOT NULL,
+    `modo_calculo` ENUM('aritmetica', 'ponderada', 'soma') NOT NULL DEFAULT 'ponderada',
+    `avaliacoes_selecionadas` JSON NOT NULL,
+    `atualizado_em` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_cfg_medias_turma` FOREIGN KEY (`turma_id`) REFERENCES `turmas` (`id`),
+    CONSTRAINT `fk_cfg_medias_uc` FOREIGN KEY (`uc_id`) REFERENCES `unidades_curriculares` (`id`),
+    UNIQUE KEY `uk_cfg_medias_turma_uc` (`turma_id`, `uc_id`)
 ) ENGINE=InnoDB;
 
 -- 21. Tabela: notas

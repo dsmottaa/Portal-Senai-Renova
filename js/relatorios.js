@@ -299,7 +299,7 @@ class RelatoriosController {
       doc.setTextColor(...this.mediumGray);
       doc.text(userNome, margin, linhaY + 4);
       doc.text('Docente / Responsável', margin, linhaY + 8);
-      doc.text('PAULO RICARDO MENDONÇA', pageWidth - margin - 65, linhaY + 4);
+      doc.text('GUILIA PORTUGAL', pageWidth - margin - 65, linhaY + 4);
       doc.text('Coordenação Pedagógica / Direção', pageWidth - margin - 65, linhaY + 8);
     }
   }
@@ -702,10 +702,10 @@ class RelatoriosController {
         this._preencherSinteseGeral(doc, { turma, uc });
         break;
       case 'aluno_frequencia':
-        this._preencherComprovanteFrequenciaAluno(doc, { aluno: aluno || { id: 9, nome: 'Yasmin Costa', ra: '123456' }, turma });
+        this._preencherComprovanteFrequenciaAluno(doc, { aluno: aluno || { id: 52, nome: 'Pedro Henrique', ra: 'RA2026052' }, turma });
         break;
       case 'aluno_boletim':
-        this._preencherBoletimAluno(doc, { aluno: aluno || { id: 9, nome: 'Yasmin Costa', ra: '123456' }, turma });
+        this._preencherBoletimAluno(doc, { aluno: aluno || { id: 52, nome: 'Pedro Henrique', ra: 'RA2026052' }, turma });
         break;
       default:
         this._preencherFrequencia(doc, { turma, uc, aluno });
@@ -814,7 +814,7 @@ class RelatoriosController {
     const opcoesObj = (typeof opcoes === 'object' && opcoes !== null) ? opcoes : {};
     const user = (window.auth && typeof window.auth.getUser === 'function') ? window.auth.getUser() : null;
     const aluno = (window.db && typeof window.db.getAlunoLogado === 'function') ? window.db.getAlunoLogado() : user;
-    const alunoRef = aluno || { id: 9, nome: 'Yasmin Costa', turmaId: 1, ra: '123456' };
+    const alunoRef = aluno || { id: 52, nome: 'Pedro Henrique', turmaId: 1, ra: 'RA2026052' };
 
     this.turmaId = alunoRef.turmaId || 1;
     this.ucId = 1;

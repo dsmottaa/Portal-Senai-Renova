@@ -2018,6 +2018,94 @@
   color: #0f172a;
 }
 
+.notas-medias-config-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.notas-medias-config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.notas-medias-config-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.notas-medias-config-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.notas-medias-modo-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notas-medias-modo-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.notas-medias-checkboxes-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.notas-av-checkbox-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: #334155;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.notas-av-checkbox-pill:hover {
+  border-color: #7c3aed;
+  background: #f5f3ff;
+}
+
+.notas-av-checkbox-pill.selected {
+  border-color: #7c3aed;
+  background: #ede9fe;
+  color: #4c1d95;
+  font-weight: 600;
+}
+
+.notas-av-checkbox-pill input[type="checkbox"] {
+  accent-color: #7c3aed;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.notas-av-checkbox-meta {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
 /* Tabela Azul SENAI (substitui roxa) */
 .table-senai-header thead {
   background: #0284c7;

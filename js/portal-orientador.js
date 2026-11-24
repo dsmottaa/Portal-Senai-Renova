@@ -35,12 +35,17 @@ class PortalOrientadorController {
     if (this._boundEvents) return;
     this._boundEvents = true;
 
-    // Atualização reativa em tempo real com o banco central
-    window.addEventListener('renova:db-updated', () => {
+    const atualizar = () => {
       if (window.auth && window.auth.isOrientador && window.auth.isOrientador()) {
         this.recarregarAbaAtiva();
+      } else {
+        this.renderizarJustificativas();
       }
-    });
+    };
+
+    // Atualização reativa em tempo real com o banco central e envio de atestados
+    window.addEventListener('renova:db-updated', atualizar);
+    window.addEventListener('justificativa-atualizada', atualizar);
   }
 
   _popularSelectsTurma() {
@@ -119,6 +124,20 @@ class PortalOrientadorController {
     this.recarregarAbaAtiva();
   }
 
+  renderizarJustificativas() {
+    this.renderAtestados();
+  }
+
+  atualizarTudo() {
+    this.renderRadar();
+    this.renderAtestados();
+    this.renderCompensacoes();
+    this.renderRelatorioAlunos();
+    if (this.alunoProntuarioAtivo) {
+      this.renderProntuario();
+    }
+  }
+
   recarregarAbaAtiva() {
     switch (this.currentSubTab) {
       case 'radar':
@@ -129,6 +148,9 @@ class PortalOrientadorController {
         break;
       case 'compensacoes':
         this.renderCompensacoes();
+        break;
+      case 'relatorio':
+        this.renderRelatorioAlunos();
         break;
       case 'prontuario':
         this.renderProntuario();
@@ -565,8 +587,8 @@ class PortalOrientadorController {
                 <button type="button" class="btn btn-sm" onclick="window.portalOrientadorController.homologarAtestado(${j.id}, 'A_COMPENSAR')" title="Encaminhar para Compensação de Horas" style="background:#d97706; color:#fff; border:none; padding:4px 8px; font-size:11px; border-radius:4px;">
                   Compensar
                 </button>
-                <button type="button" class="btn btn-sm" onclick="window.portalOrientadorController.homologarAtestado(${j.id}, 'INJUSTIFICADA')" title="Recusar como Injustificada" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; font-size:11px; border-radius:4px;">
-                  Recusar
+                <button type="button" class="btn btn-sm" onclick="window.portalOrientadorController.homologarAtestado(${j.id}, 'INJUSTIFICADA')" title="Indeferir justificativa" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; font-size:11px; border-radius:4px;">
+                  Indeferir
                 </button>
               ` : `
                 <span style="font-size:11px; color:#64748b;">Homologado por ${j.homologadoPor ? j.homologadoPor.split(' ')[0] : 'Orientador'}</span>
@@ -729,6 +751,16 @@ class PortalOrientadorController {
     if (res) {
       window.app.mostrarToast(`Atestado atualizado com status: ${novoStatus}!`, 'success');
       this.recarregarAbaAtiva();
+      if (typeof window.dispatchEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('renova:db-updated'));
+        window.dispatchEvent(new CustomEvent('justificativa-atualizada', { detail: res }));
+      }
+      if (window.portalAlunoController && typeof window.portalAlunoController.renderizarSecaoOrientacao === 'function') {
+        window.portalAlunoController.renderizarSecaoOrientacao();
+      }
+      if (window.app && typeof window.app.renderizarPortalAluno === 'function' && window.auth && window.auth.isAluno && window.auth.isAluno()) {
+        window.app.renderizarPortalAluno();
+      }
     }
   }
 
@@ -961,6 +993,7 @@ class PortalOrientadorController {
       </div>
     `;
 
+    modal.style.display = 'flex';
     modal.classList.add('open');
   }
 
@@ -993,6 +1026,7 @@ class PortalOrientadorController {
     document.getElementById('inputContatoCanal').value = 'WHATSAPP';
     document.getElementById('inputContatoObs').value = '';
 
+    modal.style.display = 'flex';
     modal.classList.add('open');
   }
 
@@ -1053,6 +1087,7 @@ class PortalOrientadorController {
     document.getElementById('inputAtendimentoResumo').value = '';
     document.getElementById('inputAtendimentoCombinados').value = '';
 
+    modal.style.display = 'flex';
     modal.classList.add('open');
   }
 
@@ -1124,6 +1159,7 @@ class PortalOrientadorController {
     document.getElementById('inputCompensacaoMotivo').value = 'Compensação decorrente de ausência / atrasos';
     document.getElementById('inputCompensacaoAtividade').value = 'Realização e entrega de atividade prática no laboratório.';
 
+    modal.style.display = 'flex';
     modal.classList.add('open');
   }
 
@@ -1170,6 +1206,7 @@ class PortalOrientadorController {
     document.getElementById('validarAtestadoMotivo').textContent = just.motivo;
     document.getElementById('validarAtestadoParecer').value = '';
 
+    modal.style.display = 'flex';
     modal.classList.add('open');
   }
 
@@ -1328,12 +1365,14 @@ class PortalOrientadorController {
     });
 
     if (filtrados.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color:#64748b;">Nenhum estudante encontrado para os filtros selecionados.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:32px; color:#64748b;">Nenhum estudante encontrado para os filtros selecionados.</td></tr>';
       return;
     }
 
     tbody.innerHTML = filtrados.map(item => {
       const al = item.aluno;
+      const turmaCodigo = item.turma ? item.turma.codigo : `Turma ${al.turmaId || 1}`;
+      const turmaNome = item.turma ? (item.turma.nome || '') : '';
       let badgeBg = '#ecfdf5';
       let badgeColor = '#065f46';
       let badgeLabel = 'Regular';
@@ -1348,44 +1387,48 @@ class PortalOrientadorController {
       }
 
       const contatoTxt = item.ultimoContato
-        ? `<span style="font-size:12px; font-weight:600; color:#0f172a;">${item.ultimoContato.data}</span><span style="font-size:11px; color:#64748b; display:block;">${item.ultimoContato.canal} • ${item.ultimoContato.hora || ''}</span>`
+        ? `<span style="font-size:12px; font-weight:600; color:#0f172a; display:block;">${item.ultimoContato.data}</span><span style="font-size:11px; color:#64748b; display:block; margin-top:2px;">${item.ultimoContato.canal}${item.ultimoContato.hora ? ' • ' + item.ultimoContato.hora : ''}</span>`
         : '<span style="font-size:11.5px; color:#94a3b8; font-style:italic;">Nenhum contato</span>';
 
       return `
         <tr>
-          <td style="white-space: normal; word-break: break-word; vertical-align: middle;">
-            <strong style="color:#0f172a; font-size:13px; display:block; line-height:1.35;">${al.nome}</strong>
+          <td class="col-aluno">
+            <strong style="color:#0f172a; font-size:13px; font-weight:700; display:block; line-height:1.35;">${al.nome}</strong>
             <span style="font-size:11px; color:#64748b; display:block; margin-top:2px;">${al.ra || 'RA' + String(al.id).padStart(7, '0')}</span>
           </td>
-          <td class="center" style="font-weight:700; font-size:13px; vertical-align: middle; color:${item.freq < 75 ? '#e11d48' : (item.freq < 85 ? '#d97706' : '#16a34a')};">
+          <td class="col-turma">
+            <span style="font-size:12px; font-weight:700; color:#1e293b; display:block;">${turmaCodigo}</span>
+            ${turmaNome ? `<span style="font-size:11px; color:#64748b; display:block; margin-top:2px; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${turmaNome}">${turmaNome}</span>` : ''}
+          </td>
+          <td class="col-freq center" style="font-weight:700; font-size:13px; color:${item.freq < 75 ? '#e11d48' : (item.freq < 85 ? '#d97706' : '#16a34a')};">
             ${item.freq}%
           </td>
-          <td class="center" style="font-weight:700; vertical-align: middle; color:${item.faltas > 0 ? '#b91c1c' : '#475569'};">
+          <td class="col-faltas center" style="font-weight:700; color:${item.faltas > 0 ? '#b91c1c' : '#475569'};">
             ${item.faltas}
           </td>
-          <td class="center" style="font-weight:600; vertical-align: middle; color:${item.atrasos >= 5 ? '#c2410c' : '#475569'};">
+          <td class="col-atrasos center" style="font-weight:600; color:${item.atrasos >= 5 ? '#c2410c' : '#475569'};">
             ${item.atrasos}
           </td>
-          <td class="center" style="vertical-align: middle; white-space: normal;">
+          <td class="col-comp center">
             ${item.compensacoes > 0
-              ? `<span class="badge" style="background:#fef3c7; color:#92400e; font-weight:700; padding:3px 8px; border-radius:4px; display:inline-block;">${item.compensacoes} pendente(s)</span>`
-              : '<span style="color:#16a34a; font-size:11.5px; font-weight:600;">Em dia</span>'}
+              ? `<span class="badge" style="background:#fef3c7; color:#92400e; font-weight:700; padding:4px 10px; border-radius:9999px; font-size:11px; display:inline-block; white-space:nowrap;">${item.compensacoes} pendente(s)</span>`
+              : '<span class="badge" style="background:#ecfdf5; color:#15803d; font-size:11px; font-weight:600; padding:4px 10px; border-radius:9999px; display:inline-block; white-space:nowrap;">Em dia</span>'}
           </td>
-          <td style="white-space: normal; word-break: break-word; vertical-align: middle;">${contatoTxt}</td>
-          <td class="center" style="vertical-align: middle;">
-            <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-weight:700; padding:4px 9px; border-radius:6px; font-size:11px; display:inline-block;">
+          <td class="col-contato">${contatoTxt}</td>
+          <td class="col-situacao center">
+            <span class="badge" style="background:${badgeBg}; color:${badgeColor}; font-weight:700; padding:4px 10px; border-radius:9999px; font-size:11px; display:inline-block; white-space:nowrap;">
               ${badgeLabel}
             </span>
           </td>
-          <td class="center" style="vertical-align: middle;">
-            <div style="display:flex; gap:4px; justify-content:center; align-items:center; flex-wrap:wrap;">
-              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato(${al.id}, '${al.nome.replace(/'/g, "\\'")}')" style="font-size:11px; padding:4px 8px; line-height:1.2;" title="Registrar Contato">
+          <td class="col-acoes center">
+            <div class="relatorio-acoes-wrap">
+              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato(${al.id}, '${al.nome.replace(/'/g, "\\'")}')" title="Registrar Contato">
                 Contato
               </button>
-              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalAgendarCompensacao(${al.id}, '${al.nome.replace(/'/g, "\\'")}')" style="font-size:11px; padding:4px 8px; line-height:1.2;" title="Agendar Compensação">
+              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalAgendarCompensacao(${al.id}, '${al.nome.replace(/'/g, "\\'")}')" title="Agendar Compensação">
                 Compensar
               </button>
-              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirProntuario(${al.id})" style="font-size:11px; padding:4px 8px; line-height:1.2; background:#f8fafc;" title="Ver Prontuário">
+              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirProntuario(${al.id})" style="background:#f8fafc;" title="Ver Prontuário">
                 Prontuário
               </button>
             </div>

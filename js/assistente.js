@@ -10,8 +10,8 @@
 class AssistenteIAController {
   constructor() {
     console.log('[Assistente IA] === VERSÃO 2025-01-15-v6 - MODEL: qwen/qwen3.8-27b ===');
-    this.turmaId = 1;
-    this.ucId = 1;
+    this.turmaId = null;
+    this.ucId = null;
     this.apiKey = window.db?.data?.config?.groqApiKey 
                || localStorage.getItem('renova_groq_api_key') 
                || '';
@@ -25,19 +25,16 @@ class AssistenteIAController {
   }
 
   init() {
-    if (window.app && window.app.turmaAtiva) {
-      this.turmaId = Number(window.app.turmaAtiva.id || this.turmaId || 1);
-      this.ucId = Number(window.app.turmaAtiva.ucId || this.ucId || 1);
-    }
+    this.turmaId = null;
+    this.ucId = null;
     this.carregarTurmasSelect();
     this.atualizarStatusChave();
     this.atualizarChipsPorPerfil();
     this.configurarEventos();
+    this.atualizarEstadoBloqueio();
 
-    // Se não houver mensagens no histórico, insere a de boas-vindas
-    if (this.mensagens.length === 0) {
-      this.exibirMensagemBoasVindas();
-    }
+    // Sempre exibe boas-vindas orientando a seleção da turma
+    this.exibirMensagemBoasVindas();
   }
 
   atualizarChipsPorPerfil() {
@@ -77,6 +74,8 @@ class AssistenteIAController {
         this.executarOpcaoPredefinida(acao, rotulo);
       });
     });
+
+    this.atualizarEstadoBloqueio();
   }
 
   // --- Carregamento de Turmas no Seletor ---
@@ -84,33 +83,72 @@ class AssistenteIAController {
     const sel = document.getElementById('selectTurmaAssistente');
     if (!sel) return;
 
-    const turmas = window.db.getTurmas('TODOS');
-    sel.innerHTML = '';
+    const turmas = (window.db && window.db.data && Array.isArray(window.db.data.turmas))
+      ? window.db.data.turmas
+      : [];
+
+    sel.innerHTML = '<option value="">— Selecione uma turma —</option>';
     turmas.forEach(t => {
       const opt = document.createElement('option');
       opt.value = t.id;
       opt.textContent = `${t.codigo} - ${t.nome}`;
-      if (t.id === this.turmaId) opt.selected = true;
       sel.appendChild(opt);
     });
 
-    // Atualiza UCs da turma selecionada
-    const ucs = window.db.getUCsPorTurma(this.turmaId);
-    if (ucs.length > 0) {
-      this.ucId = ucs[0].id;
+    sel.value = this.turmaId ? String(this.turmaId) : '';
+
+    if (this.turmaId) {
+      const ucs = window.db.getUCsPorTurma(this.turmaId);
+      if (ucs.length > 0) {
+        this.ucId = ucs[0].id;
+      }
+    } else {
+      this.ucId = null;
     }
   }
 
   aoMudarTurma(novaTurmaId) {
-    this.turmaId = Number(novaTurmaId);
-    const ucs = window.db.getUCsPorTurma(this.turmaId);
-    if (ucs.length > 0) {
-      this.ucId = ucs[0].id;
+    if (!novaTurmaId) {
+      this.turmaId = null;
+      this.ucId = null;
+      this.atualizarEstadoBloqueio();
+      this.adicionarMensagem('bot', '⚠️ **Nenhuma turma selecionada.** Selecione uma turma real no seletor acima antes de iniciar o atendimento com a IA.');
+      return;
     }
 
+    this.turmaId = Number(novaTurmaId);
+    const ucs = window.db.getUCsPorTurma(this.turmaId);
+    this.ucId = ucs.length > 0 ? ucs[0].id : null;
+    this.atualizarEstadoBloqueio();
+
     const turma = window.db.getTurmaById(this.turmaId);
-    const msgContexto = `🔄 **Turma alterada para ${turma?.codigo || ''} - ${turma?.nome || ''}**.\nTodos os diagnósticos e dados agora correspondem a esta turma. Como posso ajudar?`;
+    const msgContexto = `🔄 **Turma selecionada: ${turma?.codigo || ''} - ${turma?.nome || ''}**.\nO chat e os botões rápidos foram liberados com os dados reais desta turma. Como posso ajudar?`;
     this.adicionarMensagem('bot', msgContexto);
+  }
+
+  atualizarEstadoBloqueio() {
+    const temTurma = Boolean(this.turmaId);
+    const liberado = temTurma && !this.isGenerating;
+
+    const input = document.getElementById('inputAssistenteMsg');
+    const btnSend = document.getElementById('btnAssistenteEnviar');
+    if (input) {
+      input.disabled = !liberado;
+      input.placeholder = temTurma
+        ? 'Digite sua pergunta sobre a turma...'
+        : 'Selecione uma turma real acima para iniciar...';
+    }
+    if (btnSend) {
+      btnSend.disabled = !liberado;
+      btnSend.style.opacity = liberado ? '' : '0.55';
+      btnSend.style.cursor = liberado ? 'pointer' : 'not-allowed';
+    }
+
+    document.querySelectorAll('.assistente-quick-card, .assistente-chip-btn').forEach(btn => {
+      btn.disabled = !liberado;
+      btn.style.opacity = liberado ? '' : '0.55';
+      btn.style.cursor = liberado ? 'pointer' : 'not-allowed';
+    });
   }
 
 // --- Recarregar Chave do localStorage ---
@@ -268,9 +306,18 @@ class AssistenteIAController {
     const ucs = window.db ? window.db.getUCsPorTurma(this.turmaId) : [];
     const ucAtual = ucs.find(u => Number(u.id) === Number(this.ucId)) || ucs[0];
 
+    if (!this.turmaId) {
+      this.adicionarMensagem(
+        'bot',
+        '⚠️ **Selecione uma turma real** no campo **"Turma:"** acima antes de iniciar o atendimento com a IA.\n\nO campo de perguntas e os botões de sugestões rápidas serão liberados automaticamente assim que uma turma for selecionada.',
+        false
+      );
+      return;
+    }
+
     const textoBoasVindas = isCoord
-      ? 'Olá! Sou o Assistente Técnico Pedagógico da Coordenação SENAI. Posso analisar o desempenho de todas as turmas, índices de evasão, comparativos de frequência e relatórios operacionais. Como posso ajudar?'
-      : `Olá! Sou o Assistente Pedagógico do Portal do Professor. Estou acompanhando a turma **${turma ? turma.codigo : 'Atual'}** (${ucAtual ? ucAtual.nome : 'Unidade Curricular'}).\n\nPosso ajudar com **plano de aula e conteúdos**, **frequência e faltas**, **avaliações e médias** ou sugestões de recuperação paralela. Como posso ajudar?`;
+      ? 'Olá! Sou o Assistente Técnico Pedagógico da Coordenação SENAI. Posso analisar o desempenho da turma selecionada, índices de evasão, comparativos de frequência e relatórios operacionais. Como posso ajudar?'
+      : `Olá! Sou o Assistente Pedagógico do Portal do Professor. Estou acompanhando a turma **${turma ? turma.codigo : 'Selecionada'}** (${ucAtual ? ucAtual.nome : 'Unidade Curricular'}).\n\nPosso ajudar com **plano de aula e conteúdos**, **frequência e faltas**, **avaliações e médias** ou sugestões de recuperação paralela. Como posso ajudar?`;
     this.adicionarMensagem('bot', textoBoasVindas, false);
   }
 
@@ -281,6 +328,11 @@ class AssistenteIAController {
 
   // --- Envio de Mensagem Escrita pelo Usuário ---
   enviarMensagemInput() {
+    if (!this.turmaId) {
+      window.app.mostrarToast('Selecione uma turma real antes de usar o Assistente IA.', 'warning');
+      this.atualizarEstadoBloqueio();
+      return;
+    }
     const input = document.getElementById('inputAssistenteMsg');
     if (!input) return;
     const texto = input.value.trim();
@@ -292,12 +344,22 @@ class AssistenteIAController {
 
   // --- Execução de Pré-Opções Rápidas ---
   executarOpcaoPredefinida(acao, rotulo) {
+    if (!this.turmaId) {
+      window.app.mostrarToast('Selecione uma turma real antes de usar as sugestões rápidas.', 'warning');
+      this.atualizarEstadoBloqueio();
+      return;
+    }
     if (this.isGenerating) return;
     this.processarMensagem(rotulo, acao);
   }
 
   // --- Fluxo Geral de Processamento ---
   async processarMensagem(textoUsuario, acaoTipo = null) {
+    if (!this.turmaId) {
+      window.app.mostrarToast('Selecione uma turma real antes de iniciar o atendimento com a IA.', 'warning');
+      this.atualizarEstadoBloqueio();
+      return;
+    }
     // Garante que a chave está atualizada (prioridade: db.config > localStorage válido)
     this.recarregarChaveDoStorage();
     console.log('[Assistente IA] API Key:', this.apiKey ? this.apiKey.substring(0, 10) + '...' : 'VAZIA');
@@ -997,12 +1059,8 @@ ${JSON.stringify(dadosContexto, null, 2)}`;
             `📌 *Parecer do Assistente:* ${hist.freqPorcentagem < 75 ? '⚠️ ATENÇÃO: Estudante com risco de retenção por falta. Recomendada busca ativa imediata.' : '✅ Aluno com frequência e desempenho regulares.'}`;
         }
 
-        const temChaveGroq = this.apiKey && this.apiKey.trim().startsWith('gsk_');
-        return `🤖 Analisei os registros da turma **${turma?.codigo || 'TDS'}**.\n\n` +
-          (temChaveGroq 
-            ? `Processando sua pergunta com **Groq (Llama 3.1)**...`
-            : `Para perguntas abertas em linguagem natural irrestrita (como gerar roteiros de aula, provas ou análises pedagógicas personalizadas), **conecte sua chave de API gratuita da Groq** clicando no botão **"Chave Groq API"** no cabeçalho.\n\n`) +
-          `Enquanto isso, você pode consultar instantaneamente qualquer uma das 11 opções nos botões abaixo (Alunos em risco, Médias, Ausentes, Plano de Ação, etc.)!`;
+        return `🤖 Analisei os registros reais da turma **${turma?.codigo || ''} - ${turma?.nome || ''}**.\n\n` +
+          `Você pode consultar instantaneamente pelos botões rápidos abaixo (Alunos em risco, Médias, Frequência, Plano de Aula, Ausentes, Ocorrências) ou perguntar diretamente pelo nome de um estudante desta turma.`;
       }
     }
   }
@@ -1136,10 +1194,7 @@ ${JSON.stringify(dadosContexto, null, 2)}`;
   }
 
   toggleBotoes(ativo) {
-    const btnSend = document.getElementById('btnAssistenteEnviar');
-    const input = document.getElementById('inputAssistenteMsg');
-    if (btnSend) btnSend.disabled = !ativo;
-    if (input) input.disabled = !ativo;
+    this.atualizarEstadoBloqueio();
   }
 
   // --- Formatador Simples e Seguro de Markdown para HTML ---
@@ -1182,10 +1237,20 @@ ${JSON.stringify(dadosContexto, null, 2)}`;
 
   // --- SUPORTE COMPATÍVEL COM FIGMA DARK CONTAINER ---
   enviarPromptRapido(texto) {
+    if (!this.turmaId) {
+      window.app.mostrarToast('Selecione uma turma real antes de usar o Assistente IA.', 'warning');
+      this.atualizarEstadoBloqueio();
+      return;
+    }
     this.processarMensagem(texto);
   }
 
   enviarMensagem() {
+    if (!this.turmaId) {
+      window.app.mostrarToast('Selecione uma turma real antes de usar o Assistente IA.', 'warning');
+      this.atualizarEstadoBloqueio();
+      return;
+    }
     const inputFigma = document.getElementById('inputChatAssistente');
     if (inputFigma && inputFigma.value.trim()) {
       const texto = inputFigma.value.trim();

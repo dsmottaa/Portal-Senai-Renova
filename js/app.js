@@ -83,38 +83,7 @@ class AppController {
     }
 
     // Atualizar dados do usuário no header
-    const user = window.auth.getUser();
-    if (user) {
-      const elNome = document.getElementById('headerUserName');
-      const elEmail = document.getElementById('headerUserEmail');
-      const elInitials = document.getElementById('headerUserInitials');
-
-      const perfilAtivo = user.perfilAtivo || user.perfil;
-      if (perfilAtivo === 'PROFESSOR') {
-        if (elNome) elNome.innerText = 'Prof. Ismael';
-        if (elInitials) elInitials.innerText = 'PI';
-      } else {
-        const partes = user.nome.split(' ');
-        const primeiroNome = partes[0].charAt(0).toUpperCase() + partes[0].slice(1).toLowerCase();
-        let nomeFormatado = primeiroNome;
-        if (perfilAtivo === 'ORIENTADOR') {
-          nomeFormatado = `Dr. ${primeiroNome}`;
-        } else if (perfilAtivo === 'COORDENACAO') {
-          nomeFormatado = `Coord. ${primeiroNome}`;
-        } else if (perfilAtivo === 'ALUNO') {
-          nomeFormatado = user.nome;
-        }
-        if (elNome) elNome.innerText = nomeFormatado;
-        if (elInitials) {
-          const initials = partes.length > 1
-            ? (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
-            : user.nome.substring(0, 2).toUpperCase();
-          elInitials.innerText = initials;
-        }
-      }
-
-      if (elEmail) elEmail.innerText = user.email;
-    }
+    this.atualizarCabecalhoUsuario();
 
     // Configura listeners de reatividade do banco de dados e cross-tab
     this.configurarSincronizacaoReativa();
@@ -278,8 +247,8 @@ class AppController {
       if (!user || user.perfil !== 'ALUNO') {
         const al = (window.db && window.db.getAlunoById(52)) || {
           id: 52,
-          nome: 'Yasmin Ribeiro Costa',
-          email: 'yasmin.costa@aluno.senai.br',
+          nome: 'Pedro Henrique',
+          email: 'pedro.henrique@aluno.senai.br',
           cpf: '111.222.333-44',
           ra: 'RA2026052'
         };
@@ -369,7 +338,7 @@ class AppController {
       if (elNome) elNome.textContent = aluno.nome;
       if (elRA) elRA.textContent = aluno.ra || 'RA2026052';
       if (elCPF) elCPF.textContent = aluno.cpf || '111.222.333-44';
-      if (elEmail) elEmail.textContent = aluno.email || 'yasmin.costa@aluno.senai.br';
+      if (elEmail) elEmail.textContent = aluno.email || 'pedro.henrique@aluno.senai.br';
       if (elCurso) elCurso.textContent = 'Técnico em Desenvolvimento de Sistemas';
       if (elTurma) elTurma.textContent = '1-2026.205 BA';
       if (elTurno) elTurno.textContent = 'Tarde (13:30 - 17:30)';
@@ -414,75 +383,150 @@ class AppController {
     if (tab === 'aparencia' && window.configuracoes) window.configuracoes.atualizarUI();
   }
 
-  carregarDadosPerfil() {
-    const user = window.auth.getUser();
+  atualizarCabecalhoUsuario() {
+    const perfilAtivo = (window.auth.getPerfilAtivo() || 'PROFESSOR').toUpperCase();
+    const user = window.auth.getDadosPerfilIsolado
+      ? window.auth.getDadosPerfilIsolado(perfilAtivo)
+      : window.auth.getUser();
     if (!user) return;
 
-    const partes = (user.nome || '').trim().split(' ');
-    const primNome = partes[0] ? partes[0].charAt(0).toUpperCase() + partes[0].slice(1).toLowerCase() : 'Prof.';
+    const elNome = document.getElementById('headerUserName');
+    const elEmail = document.getElementById('headerUserEmail');
+    const elInitials = document.getElementById('headerUserInitials');
+
+    const nomeBruto = (user.nome || '').trim();
+    const partes = nomeBruto.split(/\s+/).filter(Boolean);
+    const primeiroNome = partes[0]
+      ? partes[0].charAt(0).toUpperCase() + partes[0].slice(1).toLowerCase()
+      : 'Usuário';
     const initials = partes.length > 1
       ? (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
-      : primNome.substring(0, 2).toUpperCase();
+      : (nomeBruto || 'US').substring(0, 2).toUpperCase();
+
+    let nomeCabecalho = nomeBruto || primeiroNome;
+    if (perfilAtivo === 'PROFESSOR') {
+      nomeCabecalho = /^prof\.?\s/i.test(nomeCabecalho) ? nomeCabecalho : `Prof. ${primeiroNome}`;
+    } else if (perfilAtivo === 'COORDENACAO' || perfilAtivo === 'ADMINISTRADOR') {
+      nomeCabecalho = /^coord\.?\s/i.test(nomeCabecalho) ? nomeCabecalho : `Coord. ${primeiroNome}`;
+    }
+
+    if (elNome) elNome.textContent = nomeCabecalho;
+    if (elInitials) elInitials.textContent = initials;
+    if (elEmail) elEmail.textContent = user.email || '';
+  }
+
+  carregarDadosPerfil() {
+    const perfilAtivo = (window.auth.getPerfilAtivo() || 'PROFESSOR').toUpperCase();
+    const user = window.auth.getDadosPerfilIsolado
+      ? window.auth.getDadosPerfilIsolado(perfilAtivo)
+      : window.auth.getUser();
+    if (!user) return;
+
+    const nomeCompleto = (user.nome || '').trim();
+    const partes = nomeCompleto.split(/\s+/).filter(Boolean);
+    const initials = partes.length > 1
+      ? (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
+      : (nomeCompleto || 'US').substring(0, 2).toUpperCase();
+
+    const cargoPadrao = window.auth.getCargoPadraoPorPerfil
+      ? window.auth.getCargoPadraoPorPerfil(perfilAtivo)
+      : 'Professor';
+    const cargoExibido = user.cargo || cargoPadrao;
+    const telefoneExibido = user.telefone || '(11) 99099-0000';
+    const unidadeExibida = user.unidade || 'SENAI – Unidade São Paulo';
+    const documentoExibido = user.cpf || user.matriculaFuncional || '—';
 
     // Sidebar do perfil
     const inic = document.getElementById('perfilAvatarIniciais');
     if (inic) inic.textContent = initials;
     const nome = document.getElementById('perfilNomeExibido');
-    if (nome) nome.textContent = `Prof. ${primNome}`;
+    if (nome) nome.textContent = nomeCompleto || cargoPadrao;
+    const cargoBadge = document.getElementById('perfilCargoExibido') || document.querySelector('.meu-perfil-cargo-badge');
+    if (cargoBadge) cargoBadge.textContent = cargoExibido;
     const email = document.getElementById('perfilEmailExibido');
     if (email) email.textContent = user.email || '';
+    const tel = document.getElementById('perfilTelExibido');
+    if (tel) tel.textContent = telefoneExibido;
     const cpf = document.getElementById('perfilCpfExibido');
-    if (cpf) cpf.textContent = user.cpf || '—';
+    if (cpf) cpf.textContent = documentoExibido;
+    const unidade = document.getElementById('perfilUnidadeExibido');
+    if (unidade) unidade.textContent = unidadeExibida;
 
     // Formulário
     const fNome = document.getElementById('inputPerfilNome');
-    if (fNome) fNome.value = user.nome || '';
+    if (fNome) fNome.value = nomeCompleto;
     const fCpf = document.getElementById('inputPerfilCpf');
-    if (fCpf) fCpf.value = user.cpf || '';
+    if (fCpf) fCpf.value = user.cpf || user.matriculaFuncional || '';
     const fEmail = document.getElementById('inputPerfilEmail');
     if (fEmail) fEmail.value = user.email || '';
     const fTel = document.getElementById('inputPerfilTel');
-    if (fTel) fTel.value = user.telefone || '(11) 99099-0000';
+    if (fTel) fTel.value = telefoneExibido;
     const fCargo = document.getElementById('inputPerfilCargo');
-    if (fCargo) fCargo.value = user.cargo || 'Professor';
+    if (fCargo) {
+      if (!Array.from(fCargo.options).some(opt => opt.value === cargoExibido)) {
+        const opt = document.createElement('option');
+        opt.value = cargoExibido;
+        opt.textContent = cargoExibido;
+        fCargo.appendChild(opt);
+      }
+      fCargo.value = cargoExibido;
+    }
     const fUnidade = document.getElementById('inputPerfilUnidade');
-    if (fUnidade) fUnidade.value = user.unidade || 'SENAI – Unidade São Paulo';
+    if (fUnidade) fUnidade.value = unidadeExibida;
 
     // Manter compatibilidade com o banner antigo (configuracoes.js)
     const avatarInitials = document.getElementById('avatarInitials');
     if (avatarInitials) avatarInitials.textContent = initials;
     const profileName = document.getElementById('profileName');
-    if (profileName) profileName.textContent = user.nome || '';
+    if (profileName) profileName.textContent = nomeCompleto;
     const profileEmail = document.getElementById('profileEmail');
     if (profileEmail) profileEmail.textContent = user.email || '';
     const profileRole = document.getElementById('profileRole');
-    if (profileRole) profileRole.textContent = (window.auth.getPerfilAtivo() || 'PROFESSOR').toUpperCase();
+    if (profileRole) profileRole.textContent = cargoExibido;
+    const profileRegistration = document.getElementById('profileRegistration');
+    if (profileRegistration) profileRegistration.textContent = user.matriculaFuncional || user.cpf || 'Não informado';
   }
 
   salvarDadosPerfil() {
-    const user = window.auth.getUser();
+    const perfilAtivo = (window.auth.getPerfilAtivo() || 'PROFESSOR').toUpperCase();
+    const user = window.auth.getDadosPerfilIsolado
+      ? window.auth.getDadosPerfilIsolado(perfilAtivo)
+      : window.auth.getUser();
     if (!user) return;
+
     const fNome = document.getElementById('inputPerfilNome');
     const fEmail = document.getElementById('inputPerfilEmail');
     const fTel = document.getElementById('inputPerfilTel');
     const fCargo = document.getElementById('inputPerfilCargo');
     const fUnidade = document.getElementById('inputPerfilUnidade');
 
-    if (fNome && fNome.value.trim()) user.nome = fNome.value.trim();
-    if (fEmail && fEmail.value.trim()) user.email = fEmail.value.trim();
-    if (fTel) user.telefone = fTel.value.trim();
-    if (fCargo) user.cargo = fCargo.value;
-    if (fUnidade) user.unidade = fUnidade.value;
+    const dadosAtualizados = {
+      nome: (fNome && fNome.value.trim()) ? fNome.value.trim() : user.nome,
+      email: (fEmail && fEmail.value.trim()) ? fEmail.value.trim() : user.email,
+      telefone: fTel ? fTel.value.trim() : user.telefone,
+      cargo: fCargo ? fCargo.value : user.cargo,
+      unidade: fUnidade ? fUnidade.value : user.unidade
+    };
 
-    // Salvar no db
-    const dbUser = window.db.getUsuarioById(user.id);
-    if (dbUser) {
-      Object.assign(dbUser, { nome: user.nome, email: user.email, telefone: user.telefone, cargo: user.cargo, unidade: user.unidade });
+    const userAtualizado = window.auth.salvarPerfilIsolado
+      ? window.auth.salvarPerfilIsolado(perfilAtivo, dadosAtualizados)
+      : Object.assign(user, dadosAtualizados);
+
+    // Salvar no db apenas se o registro corresponder ao mesmo perfil
+    const dbUser = window.db && window.db.getUsuarioById ? window.db.getUsuarioById(userAtualizado.id) : null;
+    if (dbUser && (dbUser.perfil || '').toUpperCase() === perfilAtivo) {
+      Object.assign(dbUser, dadosAtualizados);
       window.db.persist();
     }
-    window.auth.saveSession(user);
+
     this.carregarDadosPerfil();
-    this.renderizarHomeProfessor();
+    this.atualizarCabecalhoUsuario();
+    if (window.configuracoes && window.configuracoes.carregarPerfilUsuario) {
+      window.configuracoes.carregarPerfilUsuario();
+    }
+    if (perfilAtivo === 'PROFESSOR') {
+      this.renderizarHomeProfessor();
+    }
     this.mostrarToast('Perfil atualizado com sucesso!', 'success');
   }
 
@@ -502,25 +546,19 @@ class AppController {
 
   // --- Renderização do Home Dashboard do Professor ---
   renderizarHomeProfessor() {
-    const user = window.auth.getUser() || {};
+    const user = window.auth.getUser();
+    const partes = ((user && user.nome) || '').trim().split(/\s+/).filter(Boolean);
+    const primeiroNome = partes[0]
+      ? partes[0].charAt(0).toUpperCase() + partes[0].slice(1).toLowerCase()
+      : 'Professor';
+    const saudacao = /^prof\.?\s/i.test((user && user.nome) || '') ? user.nome : `Prof. ${primeiroNome}`;
 
     const titleEl = document.getElementById('profGreetingTitle');
     if (titleEl) {
-      const nome = user.nome ? user.nome.split(' ')[0] : 'Professor';
-      titleEl.textContent = `Olá, Prof. ${nome}!`;
+      titleEl.textContent = `Olá, ${saudacao}!`;
     }
 
-    // Atualizar header dropdown
-    const headerName = document.getElementById('headerUserName');
-    if (headerName && user.nome) {
-      headerName.textContent = user.nome.split(' ').slice(0, 2).join(' ');
-    }
-
-    const headerInitials = document.getElementById('headerUserInitials');
-    if (headerInitials && user.nome) {
-      const parts = user.nome.split(' ');
-      headerInitials.textContent = (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
-    }
+    this.atualizarCabecalhoUsuario();
 
     // Turma ativa (auto-selecionar primeira se não houver)
     if (!this.turmaAtiva) {
@@ -693,7 +731,15 @@ class AppController {
     // Atualizar menu ativo na sidebar
     document.querySelectorAll('.nav-item').forEach(btn => {
       const target = btn.getAttribute('data-target-tab');
-      if (target === tabId || (tabId === 'fechamento_diario' && target === 'fechamento-diario') || (tabId === 'fechamento-diario' && target === 'fechamento_diario')) {
+      const targetArea = btn.getAttribute('data-target-area');
+      if (tabId === 'aluno' && target === 'aluno') {
+        const areaAtiva = this._alunoAreaAtiva || 'visaoGeral';
+        if (targetArea === areaAtiva) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      } else if (target === tabId || (tabId === 'fechamento_diario' && target === 'fechamento-diario') || (tabId === 'fechamento-diario' && target === 'fechamento_diario')) {
         btn.classList.add('active');
       } else {
         btn.classList.remove('active');
@@ -768,6 +814,7 @@ class AppController {
     } else if (tabId === 'configuracoes' || tabId === 'acessibilidade') {
       if (window.configuracoes) window.configuracoes.atualizarUI();
       this.carregarDadosPerfil();
+      this.atualizarCabecalhoUsuario();
       const tabInicial = (window.auth && window.auth.isAluno && window.auth.isAluno()) ? 'aparencia' : 'perfil';
       this.switchConfigTab(tabInicial);
     } else if (tabId === 'coordenador') {
@@ -1576,8 +1623,6 @@ class AppController {
 
     if (tab === 'notas') {
       this.renderizarNotasAluno();
-    } else if (tab === 'visaoGeral') {
-      this._renderizarDisciplinasAluno();
     } else if (tab === 'historicoAulas') {
       this.renderizarHistoricoAulasAluno();
     }
@@ -1678,15 +1723,7 @@ class AppController {
     if (elEstudanteRA) elEstudanteRA.textContent = aluno.ra || 'RA2026052';
     if (elEstudanteSubturma) elEstudanteSubturma.textContent = `Subturma ${aluno.subturma || 'B'}`;
 
-    const headerUserName = document.getElementById('headerUserName');
-    const headerUserInitials = document.getElementById('headerUserInitials');
-    if (headerUserName && window.auth.isAluno && window.auth.isAluno()) {
-      headerUserName.textContent = aluno.nome;
-      const partes = aluno.nome.split(' ');
-      if (headerUserInitials) {
-        headerUserInitials.textContent = (partes[0][0] + (partes[partes.length - 1] ? partes[partes.length - 1][0] : '')).toUpperCase();
-      }
-    }
+    this.atualizarCabecalhoUsuario();
 
     if (elStatusMatricula) {
       if (aluno.statusMatricula === 'ATIVO') {
@@ -1824,7 +1861,6 @@ class AppController {
 
     this.renderizarHistoricoAulasAluno();
     this.renderizarNotasAluno();
-    this._renderizarDisciplinasAluno();
   }
 
   // --- Painel Detalhado de Disciplinas (Visão Geral do Aluno) ---
@@ -1959,6 +1995,7 @@ class AppController {
 
   // --- Navegação Direta para Seções Dedicadas do Aluno ---
   navegarAlunoPara(area) {
+    this._alunoAreaAtiva = area;
     if (area === 'materiais') {
       this.navegarPara('materiais');
     } else if (area === 'calendario') {
@@ -3456,6 +3493,24 @@ class AppController {
   }
 
   // --- Renderização dos cards de Próximos Prazos na Home (Professor e Aluno) ---
+  togglePrazosOficiaisInicio() {
+    const container = document.getElementById('profPrazosOficiaisContainer');
+    const btn = document.getElementById('btnTogglePrazosOficiais');
+    const icon = document.getElementById('iconTogglePrazosOficiais');
+    if (!container) return;
+
+    const isHidden = container.style.display === 'none' || getComputedStyle(container).display === 'none';
+    container.style.display = isHidden ? 'grid' : 'none';
+
+    if (btn) {
+      const label = btn.querySelector('span');
+      if (label) label.textContent = isHidden ? 'Ocultar Prazos' : 'Mostrar Prazos';
+    }
+    if (icon) {
+      icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+  }
+
   renderizarPrazosOficiaisInicio() {
     const el = document.getElementById('profPrazosOficiaisContainer');
     if (!el || !window.db) return;

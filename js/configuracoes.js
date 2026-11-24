@@ -8,7 +8,8 @@
 
 class ConfiguracoesService {
   constructor() {
-    this.theme = localStorage.getItem('renova_senai_theme') || 'sistema';
+    // Sempre inicia no Modo Claro ao abrir/recarregar, sem restaurar 'dark' nem seguir prefers-color-scheme
+    this.theme = 'claro';
     this.fontSize = localStorage.getItem('renova_senai_fontsize') || 'normal';
     this.vlibrasAtivo = localStorage.getItem('renova_senai_vlibras') !== 'false';
     this.monocromaticoAtivo = localStorage.getItem('renova_senai_monocromatico') === 'true';
@@ -18,15 +19,17 @@ class ConfiguracoesService {
   }
 
   init() {
-    this.aplicarTema(this.theme);
+    document.documentElement.classList.remove('dark');
+    this.aplicarTema('claro');
     this.aplicarTamanhoFonte(this.fontSize);
     this.aplicarAcessibilidade();
     this.atualizarBotaoVLibras();
     this.carregarPerfilUsuario();
 
-    // Ouvinte para mudanças no tema do sistema operacional
+    // Ouvinte para mudanças no tema do sistema operacional (apenas se usuário escolher 'sistema' manualmente na sessão)
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
       if (this.theme === 'sistema') {
+        document.documentElement.classList.remove('dark');
         document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
       }
     });
@@ -43,22 +46,23 @@ class ConfiguracoesService {
 
   // --- Carregar Perfil do Usuário ---
   carregarPerfilUsuario() {
-    // Busca usuário do localStorage via AuthService
-    const user = window.auth?.getUser?.();
+    const perfil = (window.auth?.getPerfilAtivo?.() || 'PROFESSOR').toUpperCase();
+    const user = window.auth?.getDadosPerfilIsolado
+      ? window.auth.getDadosPerfilIsolado(perfil)
+      : window.auth?.getUser?.();
 
     if (!user || !user.nome) {
       console.warn('[Configurações] Usuário não encontrado');
       return;
     }
 
-    // Popula dados com optional chaining e fallbacks
-    const nome = user?.nome || 'Usuário';
-    const email = user?.email || 'Não informado';
-    const perfil = user?.perfil || 'PROFESSOR';
-    const matricula = user?.matriculaFuncional || 'Não informado';
+    const nome = user.nome || 'Usuário';
+    const email = user.email || 'Não informado';
+    const cargo = user.cargo || window.auth?.getCargoPadraoPorPerfil?.(perfil) || perfil;
+    const matricula = user.matriculaFuncional || user.cpf || 'Não informado';
 
     // Gera iniciais do nome
-    const partes = nome.trim().split(/\s+/);
+    const partes = nome.trim().split(/\s+/).filter(Boolean);
     const iniciais = partes.length > 1
       ? (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
       : nome.substring(0, 2).toUpperCase();
@@ -73,7 +77,7 @@ class ConfiguracoesService {
     if (avatarInitials) avatarInitials.textContent = iniciais;
     if (profileName) profileName.textContent = nome;
     if (profileEmail) profileEmail.textContent = email;
-    if (profileRole) profileRole.textContent = perfil;
+    if (profileRole) profileRole.textContent = cargo;
     if (profileRegistration) profileRegistration.textContent = matricula;
 
     // Atualiza visibilidade do botão flutuante VLibras
@@ -90,10 +94,12 @@ class ConfiguracoesService {
     if (tema === 'escuro') {
       document.documentElement.setAttribute('data-theme', 'dark');
     } else if (tema === 'claro') {
+      document.documentElement.classList.remove('dark');
       document.documentElement.setAttribute('data-theme', 'light');
     } else {
-      // Sistema
+      // Sistema (quando selecionado manualmente na sessão)
       const isSystemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (!isSystemDark) document.documentElement.classList.remove('dark');
       document.documentElement.setAttribute('data-theme', isSystemDark ? 'dark' : 'light');
     }
   }

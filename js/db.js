@@ -32,10 +32,10 @@ const INITIAL_DB = {
     {
       id: 2,
       cpf: '987.654.321-11',
-      email: 'coord.paulo@sp.senai.br',
+      email: 'coord.guilia@sp.senai.br',
       emailAlternativo: 'coordenador@senai.br',
       senha: '123',
-      nome: 'PAULO RICARDO MENDONÇA',
+      nome: 'GUILIA PORTUGAL',
       perfil: 'COORDENACAO',
       matriculaFuncional: 'SENAI-ADM-2022-014'
     },
@@ -110,10 +110,10 @@ const INITIAL_DB = {
       id: 9,
       cpf: '111.222.333-44',
       cpfAlternativo: '11122233344',
-      email: 'yasmin.costa@aluno.senai.br',
+      email: 'pedro.henrique@aluno.senai.br',
       emailAlternativo: 'aluno@senai.br',
       senha: '123',
-      nome: 'Yasmin Ribeiro Costa',
+      nome: 'Pedro Henrique',
       perfil: 'ALUNO',
       matriculaFuncional: 'SENAI-ALU-2026-052'
     },
@@ -1103,11 +1103,11 @@ const INITIAL_DB = {
     {
       id: 52,
       ra: 'RA2026052',
-      nome: 'Yasmin Ribeiro Costa',
-      email: 'yasmin.costa@aluno.senai.br',
+      nome: 'Pedro Henrique',
+      email: 'pedro.henrique@aluno.senai.br',
       emailAlternativo: 'aluno@senai.br',
       cpf: '111.222.333-44',
-      foto: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=150',
+      foto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
       turmaId: 1,
       subturma: 'B',
       statusMatricula: 'ATIVO',
@@ -1375,7 +1375,7 @@ const INITIAL_DB = {
       documento: 'atestado_medico_crm_54210.pdf',
       status: 'ABONADA',
       parecer: 'Atestado médico de 7 dias homologado conforme CID-10.',
-      cadastradoPor: 'PAULO RICARDO MENDONÇA (Coordenação)',
+      cadastradoPor: 'Guilia Portugal (Coordenação)',
       homologadoPor: 'CARLA BEATRIZ MENDES (Orientação)',
       dataCadastro: '2026-10-19',
       dataHomologacao: '2026-10-19'
@@ -1383,7 +1383,7 @@ const INITIAL_DB = {
     {
       id: 2,
       alunoId: 52,
-      alunoNome: 'Yasmin Ribeiro Costa',
+      alunoNome: 'Pedro Henrique',
       turmaId: 1,
       tipo: 'Declaração de Consulta',
       dataInicio: '2026-11-16',
@@ -1392,7 +1392,7 @@ const INITIAL_DB = {
       documento: 'declaracao_oftalmo_yasmin.pdf',
       status: 'PENDENTE',
       parecer: '',
-      cadastradoPor: 'Yasmin Ribeiro Costa (Aluno)',
+      cadastradoPor: 'Pedro Henrique (Aluno)',
       homologadoPor: '',
       dataCadastro: '2026-11-16'
     },
@@ -1574,7 +1574,7 @@ const INITIAL_DB = {
       descricao: 'Aluno atingiu a marca de 5 atrasos. Notificado e em processo de acompanhamento pedagógico.',
       status: 'EM_ANALISE',
       data: '2026-10-21',
-      autor: 'PAULO RICARDO MENDONÇA (Coordenação)'
+      autor: 'Guilia Portugal (Coordenação)'
     },
     {
       id: 3,
@@ -2325,20 +2325,32 @@ class RenovaDB {
             id: 9,
             cpf: '111.222.333-44',
             cpfAlternativo: '11122233344',
-            email: 'yasmin.costa@aluno.senai.br',
+            email: 'pedro.henrique@aluno.senai.br',
             emailAlternativo: 'aluno@senai.br',
             senha: '123',
-            nome: 'Yasmin Ribeiro Costa',
+            nome: 'Pedro Henrique',
             perfil: 'ALUNO',
             matriculaFuncional: 'SENAI-ALU-2026-052'
           });
           this.persist();
         }
-        const yasminDb = (this.data.alunos || []).find(a => a.id === 52 || (a.nome && a.nome.toLowerCase().includes('yasmin')));
-        if (yasminDb) {
-          yasminDb.turmaId = 1;
-          yasminDb.cpf = '111.222.333-44';
-          yasminDb.emailAlternativo = 'aluno@senai.br';
+        const pedroDb = (this.data.alunos || []).find(a => a.id === 52 || (a.nome && (a.nome.toLowerCase().includes('yasmin') || a.nome.toLowerCase().includes('pedro henrique'))));
+        if (pedroDb) {
+          pedroDb.nome = 'Pedro Henrique';
+          pedroDb.email = 'pedro.henrique@aluno.senai.br';
+          pedroDb.turmaId = 1;
+          pedroDb.cpf = '111.222.333-44';
+          pedroDb.emailAlternativo = 'aluno@senai.br';
+        }
+        const coordUser = (this.data.usuarios || []).find(u => u.id === 2 || u.perfil === 'COORDENACAO');
+        if (coordUser) {
+          coordUser.nome = 'GUILIA PORTUGAL';
+          coordUser.email = 'coord.guilia@sp.senai.br';
+        }
+        const alunoUser = (this.data.usuarios || []).find(u => u.id === 9 || u.perfil === 'ALUNO');
+        if (alunoUser) {
+          alunoUser.nome = 'Pedro Henrique';
+          alunoUser.email = 'pedro.henrique@aluno.senai.br';
         }
         // Migração: sincroniza novas UCs e aulas de demonstração
         if (!this.data.unidadesCurriculares || !this.data.unidadesCurriculares.some(uc => uc.id === 15)) {
@@ -2526,6 +2538,7 @@ class RenovaDB {
     if (!Array.isArray(this.data.materiais)) this.data.materiais = this.data.materiaisDidaticos;
     if (!Array.isArray(this.data.calendarioOficial)) this.data.calendarioOficial = [];
     if (!Array.isArray(this.data.eventosCalendario)) this.data.eventosCalendario = this.data.calendarioOficial;
+    if (!this.data.configMediasUC || typeof this.data.configMediasUC !== 'object') this.data.configMediasUC = {};
 
     // Garantir bimestre nas avaliações
     if (Array.isArray(this.data.avaliacoes)) {
@@ -2962,6 +2975,7 @@ class RenovaDB {
       parecer: justificativa.parecer || '',
       cadastradoPor: justificativa.cadastradoPor || 'Portal do Aluno',
       homologadoPor: justificativa.homologadoPor || '',
+      criadoEm: justificativa.criadoEm || new Date().toISOString(),
       dataCadastro: justificativa.dataCadastro || new Date().toISOString().split('T')[0],
       dataHomologacao: justificativa.dataHomologacao || null
     };
@@ -3452,17 +3466,47 @@ class RenovaDB {
   addAvaliacao(avaliacao) {
     if (!this.data.avaliacoes) this.data.avaliacoes = [];
     const novoId = Math.max(0, ...this.data.avaliacoes.map(a => Number(a.id) || 0)) + 1;
+    const maxVal = Number(avaliacao.notaMaxima ?? avaliacao.valorMaximo) || 100;
     const novo = {
       id: novoId,
       ...avaliacao,
       turmaId: Number(avaliacao.turmaId),
       ucId: Number(avaliacao.ucId),
       peso: Number(avaliacao.peso) || 1.0,
-      notaMaxima: Number(avaliacao.notaMaxima) || 100
+      notaMaxima: maxVal,
+      valorMaximo: maxVal
     };
     this.data.avaliacoes.push(novo);
+
+    // Se já existir configuração de médias para a UC, inclui a nova avaliação automaticamente
+    const chave = `${novo.turmaId}_${novo.ucId}`;
+    if (this.data.configMediasUC && this.data.configMediasUC[chave]) {
+      const cfg = this.data.configMediasUC[chave];
+      if (Array.isArray(cfg.avaliacoesSelecionadas) && !cfg.avaliacoesSelecionadas.includes(novoId)) {
+        cfg.avaliacoesSelecionadas.push(novoId);
+      }
+    }
+
     this.persist();
     return novo;
+  }
+
+  getConfigMediasUC(turmaId, ucId) {
+    if (!this.data.configMediasUC) this.data.configMediasUC = {};
+    const chave = `${Number(turmaId)}_${Number(ucId)}`;
+    return this.data.configMediasUC[chave] || null;
+  }
+
+  salvarConfigMediasUC(turmaId, ucId, config) {
+    if (!this.data.configMediasUC) this.data.configMediasUC = {};
+    const chave = `${Number(turmaId)}_${Number(ucId)}`;
+    this.data.configMediasUC[chave] = {
+      modoCalculo: config.modoCalculo || 'ponderada',
+      avaliacoesSelecionadas: Array.isArray(config.avaliacoesSelecionadas)
+        ? config.avaliacoesSelecionadas.map(Number)
+        : []
+    };
+    this.persist();
   }
 
   getNota(avaliacaoId, alunoId) {
@@ -3471,47 +3515,81 @@ class RenovaDB {
   }
 
   salvarNota(avaliacaoId, alunoId, valor) {
+    const numVal = parseFloat(valor);
+    if (isNaN(numVal)) {
+      this.data.notas = this.data.notas.filter(
+        n => !(n.avaliacaoId === Number(avaliacaoId) && n.alunoId === Number(alunoId))
+      );
+      this.persist();
+      return;
+    }
+    const av = (this.data.avaliacoes || []).find(a => Number(a.id) === Number(avaliacaoId));
+    const maxNota = av ? (Number(av.notaMaxima ?? av.valorMaximo) || 100) : 100;
+    const clamped = Math.max(0, Math.min(maxNota, numVal));
+
     let nota = this.data.notas.find(n => n.avaliacaoId === Number(avaliacaoId) && n.alunoId === Number(alunoId));
     if (nota) {
-      nota.valor = parseFloat(valor);
+      nota.valor = clamped;
     } else {
       this.data.notas.push({
         avaliacaoId: Number(avaliacaoId),
         alunoId: Number(alunoId),
-        valor: parseFloat(valor)
+        valor: clamped
       });
     }
     this.persist();
   }
 
   calcularMediaAluno(turmaId, ucId, alunoId) {
-    const avaliacoes = this.getAvaliacoesPorUC(turmaId, ucId);
-    if (!avaliacoes.length) return { media: 0, situacao: 'Sem avaliações' };
+    const todasAvaliacoes = this.getAvaliacoesPorUC(turmaId, ucId);
+    if (!todasAvaliacoes.length) return { media: 0, soma: 0, situacao: 'Sem avaliações' };
 
+    const cfg = this.getConfigMediasUC(turmaId, ucId);
+    const modo = (cfg && cfg.modoCalculo) ? cfg.modoCalculo : 'ponderada';
+    const selecionadasIds = (cfg && Array.isArray(cfg.avaliacoesSelecionadas))
+      ? cfg.avaliacoesSelecionadas.map(Number)
+      : todasAvaliacoes.map(a => Number(a.id));
+
+    const avaliacoes = todasAvaliacoes.filter(a => selecionadasIds.includes(Number(a.id)));
+    if (!avaliacoes.length) return { media: 0, soma: 0, situacao: 'Pendente' };
+
+    let somaSimples = 0;
     let somaPonderada = 0;
     let somaPesos = 0;
+    let lancadas = 0;
 
     avaliacoes.forEach(av => {
       const nota = this.getNota(av.id, alunoId);
-      if (nota !== null && !isNaN(nota)) {
-        somaPonderada += nota * (av.peso || 1);
-        somaPesos += (av.peso || 1);
-      }
+      const valor = (nota !== null && !isNaN(nota)) ? Number(nota) : 0;
+      if (nota !== null && !isNaN(nota)) lancadas++;
+      const peso = Number(av.peso) || 1;
+      somaSimples += valor;
+      somaPonderada += valor * peso;
+      somaPesos += peso;
     });
 
-    if (somaPesos === 0) return { media: 0, situacao: 'Pendente' };
+    if (lancadas === 0 && !cfg) return { media: 0, soma: 0, situacao: 'Pendente' };
 
-    const media = parseFloat((somaPonderada / somaPesos).toFixed(1));
+    let mediaBruta = 0;
+    if (modo === 'aritmetica') {
+      mediaBruta = somaSimples / avaliacoes.length;
+    } else if (modo === 'soma') {
+      mediaBruta = somaSimples;
+    } else {
+      mediaBruta = somaPesos > 0 ? (somaPonderada / somaPesos) : 0;
+    }
+
+    const media = parseFloat(mediaBruta.toFixed(1));
+    const soma = parseFloat(somaSimples.toFixed(1));
     let situacao = 'Aprovado';
 
-    // Escala 0-100: Aprovado >= 70, Recuperação 50-69, Retido < 50
     if (media < 50) {
       situacao = 'Retido por Nota';
     } else if (media < this.data.config.mediaMinimaAprovacao) {
       situacao = 'Em Recuperação';
     }
 
-    return { media, situacao };
+    return { media, soma, situacao };
   }
 
   // --- STATUS E FECHAMENTO DO DIÁRIO ---
@@ -3849,6 +3927,7 @@ class RenovaDB {
         aluno = (this.data.alunos || []).find(a => {
           const aNome = (a.nome || '').toLowerCase().trim();
           if (aNome === userNome) return true;
+          if (userNome.includes('pedro') && aNome.includes('pedro')) return true;
           if (userNome.includes('yasmin') && aNome.includes('yasmin')) return true;
           if (userNome.includes('gabriel') && aNome.includes('gabriel')) return true;
           return false;
@@ -3861,10 +3940,10 @@ class RenovaDB {
       }
     }
 
-    // Fallback inteligente para perfil ALUNO: prioriza aluna Yasmin (id 52) com histórico acadêmico completo
+    // Fallback inteligente para perfil ALUNO: prioriza aluno Pedro Henrique (id 52) com histórico acadêmico completo
     if (!aluno) {
       if (user && (user.perfilAtivo === 'ALUNO' || user.perfil === 'ALUNO')) {
-        aluno = (this.data.alunos || []).find(a => a.id === 52 || (a.nome && a.nome.toLowerCase().includes('yasmin')));
+        aluno = (this.data.alunos || []).find(a => a.id === 52 || (a.nome && a.nome.toLowerCase().includes('pedro henrique')));
       }
     }
 
