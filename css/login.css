@@ -1,0 +1,608 @@
+/* =============================================================================
+   PORTAL ACADÊMICO SENAI - TELA DE LOGIN OFICIAL (FIGMA DESIGN SYSTEM)
+   Identidade Visual: Vermelho SENAI (#C3161C), Azul Escuro (#0B192C / #1E293B),
+   Cinza Neutro Claro (#F8FAFC / #F1F5F9), Tipografia Montserrat.
+   ============================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
+
+/* --- Container Geral da Tela de Login (Split View) --- */
+.login-page-body {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: var(--bg-app);
+  overflow: hidden;
+  font-family: var(--font-family);
+  color: var(--text-main);
+}
+
+.login-split-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+/* --- Coluna Esquerda: Fachada do SENAI (Foto Arquitetônica) --- */
+.login-cover-side {
+  flex: 1.1;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--senai-blue-dark);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.login-cover-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: none !important;
+  transform: none !important;
+}
+
+.login-cover-side:hover .login-cover-image {
+  transform: none !important;
+}
+
+/* Gradiente sutil para garantir contraste e profundidade estética */
+.login-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(11, 25, 44, 0.1) 0%,
+    rgba(11, 25, 44, 0.2) 40%,
+    rgba(11, 25, 44, 0.45) 100%
+  );
+  pointer-events: none;
+}
+
+/* Badge flutuante do SENAI no rodapé da imagem */
+.login-cover-content {
+  position: relative;
+  z-index: 2;
+  padding: 40px;
+  color: #ffffff;
+}
+
+.login-cover-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.login-cover-badge-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--senai-red);
+  border-radius: 50%;
+  box-shadow: 0 0 8px #ff4b55;
+}
+
+.login-cover-title {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 8px 0;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 2px rgba(0, 0, 0, 0.7);
+}
+
+.login-cover-desc {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.95;
+  margin: 0;
+  max-width: 440px;
+  line-height: 1.6;
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), 0 0 1px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Coluna Direita: Formulário Limpo e Moderno --- */
+.login-form-side {
+  flex: 0.9;
+  min-width: 460px;
+  background-color: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 40px;
+  position: relative;
+  overflow-y: auto;
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header do formulário */
+.login-header {
+  margin-bottom: 32px;
+}
+
+.login-header-logo {
+  display: none;
+  margin-bottom: 24px;
+}
+
+.login-header-logo img {
+  height: 38px;
+  width: auto;
+}
+
+.login-header-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.login-header-subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Grupos de Formulário */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.login-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.login-field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  letter-spacing: 0.2px;
+}
+
+.login-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  font-size: 15px;
+  font-family: var(--font-family);
+  font-weight: 500;
+  color: var(--text-main);
+  background-color: var(--bg-input);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--senai-radius);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.login-input::placeholder {
+  color: var(--text-subtle);
+  font-weight: 400;
+}
+
+.login-input:hover:not(:disabled) {
+  border-color: var(--text-subtle);
+}
+
+.login-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--senai-red-glow);
+}
+
+.login-input:disabled {
+  background-color: var(--bg-card-subtle);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.login-toggle-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+  z-index: 2;
+}
+
+.login-toggle-eye:hover {
+  color: var(--text-main);
+}
+
+.login-toggle-eye .eye-show {
+  display: block;
+}
+
+.login-toggle-eye .eye-hide {
+  display: none;
+}
+
+.login-input-wrapper:has(input[type="password"]:not(:placeholder-shown)) .login-toggle-eye .eye-show {
+  display: block;
+}
+
+.login-input-wrapper:has(input[type="text"].login-input:not([type="password"])) .login-toggle-eye .eye-show {
+  display: block;
+}
+
+.caps-indicator {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background-color: var(--senai-red-light);
+  color: var(--senai-red);
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.caps-indicator svg {
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .caps-indicator {
+  background-color: rgba(195, 22, 28, 0.2);
+  color: #fca5a5;
+}
+
+/* Opções: Lembrar de mim + Esqueceu senha */
+.login-options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.login-remember-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.login-remember-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--senai-red);
+  cursor: pointer;
+  border: 1.5px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-input);
+}
+
+.login-forgot-link {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--senai-red);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 0;
+}
+
+.login-forgot-link:hover {
+  color: var(--senai-red-hover);
+  text-decoration: underline;
+}
+
+/* Botão Entrar */
+.btn-senai-submit {
+  width: 100%;
+  height: 48px;
+  margin-top: 8px;
+  background: linear-gradient(135deg, var(--senai-red) 0%, var(--senai-red-hover) 100%);
+  border: none;
+  border-radius: var(--senai-radius);
+  color: var(--text-main);
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: var(--senai-shadow-btn);
+}
+
+.btn-senai-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(195, 22, 28, 0.45);
+}
+
+.btn-senai-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-senai-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Modal Esqueceu Senha */
+.login-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.login-modal-backdrop.modal-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.login-modal-card {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--bg-card);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: slideUp 0.25s ease;
+  border: 1px solid var(--border-color);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  z-index: 1;
+}
+
+.login-modal-close:hover {
+  background: var(--senai-red-light);
+  color: var(--senai-red);
+}
+
+[data-theme="dark"] .login-modal-close:hover {
+  background: rgba(195, 22, 28, 0.2);
+  color: #fca5a5;
+}
+
+.login-modal-header {
+  text-align: center;
+  padding: 32px 24px 16px;
+}
+
+.login-modal-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--senai-red) 0%, var(--senai-red-hover) 100%);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin: 0 auto 16px;
+  box-shadow: var(--senai-shadow-btn);
+}
+
+.login-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 8px;
+}
+
+.login-modal-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.login-modal-body {
+  padding: 0 24px 24px;
+}
+
+.login-modal-body .login-field-group {
+  margin-bottom: 20px;
+}
+
+.login-modal-body .login-input {
+  height: 48px;
+}
+
+.login-modal-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.btn-modal-subtle {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--senai-red);
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: var(--senai-radius);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-modal-subtle:hover {
+  background: var(--senai-red-light);
+  color: var(--senai-red-hover);
+}
+
+[data-theme="dark"] .btn-modal-subtle:hover {
+  background: rgba(195, 22, 28, 0.2);
+  color: #fca5a5;
+}
+
+/* Feedback de sucesso do modal */
+.login-modal-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.login-modal-feedback.hidden {
+  display: none;
+}
+
+.login-feedback-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+}
+
+.login-feedback-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 8px;
+}
+
+.login-feedback-text {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0 0 24px;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+  .login-split-container {
+    flex-direction: column;
+  }
+  .login-cover-side {
+    flex: none;
+    height: 280px;
+    min-height: 280px;
+  }
+  .login-form-side {
+    min-width: 100%;
+    flex: 1;
+    padding: 32px 24px;
+  }
+  .login-form-container {
+    max-width: 100%;
+  }
+  .login-cover-content {
+    padding: 24px;
+  }
+  .login-cover-title {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page-body {
+    position: relative;
+  }
+  .login-header-logo {
+    display: block;
+  }
+  .login-cover-side {
+    height: 220px;
+  }
+}
+
+/* Variáveis SENAI (mantidas para compatibilidade com gradientes específicos) */
+:root {
+  --senai-red: #c3161c;
+  --senai-red-hover: #a50e14;
+  --senai-red-light: #fef2f2;
+  --senai-red-glow: rgba(195, 22, 28, 0.22);
+  --senai-blue-dark: #0b192c;
+  --senai-radius: 8px;
+  --senai-shadow-btn: 0 4px 14px rgba(195, 22, 28, 0.35);
+}
+
+[data-theme="dark"] {
+  --senai-red-light: rgba(195, 22, 28, 0.15);
+}
