@@ -31,9 +31,16 @@ class NotasController {
   }
 
   isDiarioBloqueado() {
-    if (!window.db || !window.db.getStatusDiario) return false;
-    const status = window.db.getStatusDiario(this.turmaId);
-    return status === 'AGUARDANDO' || status === 'APROVADO';
+    if (!window.db) return false;
+    const turma = (window.db.data.turmas || []).find(t => t.id === Number(this.turmaId));
+    if (turma && (turma.status === 'CONCLUIDA' || turma.diarioFechado === true)) {
+      return true;
+    }
+    if (window.db.getStatusDiario) {
+      const status = window.db.getStatusDiario(this.turmaId);
+      return status === 'AGUARDANDO' || status === 'APROVADO';
+    }
+    return false;
   }
 
   alternarAba(aba) {

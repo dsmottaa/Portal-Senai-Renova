@@ -78,7 +78,7 @@
         </button>
       </div>
 
-      <!-- 2. PORTAL DAS ORIENTADORAS -->
+      <!-- 2. PORTAL DOS ORIENTADORES -->
       <div id="sidebarOrientSection" style="display:none; flex-direction:column; gap:6px; width:100%;">
         <button type="button" class="nav-item active" data-target-tab="orientador_radar"
           onclick="window.app.navegarPara('orientador_radar')" title="Radar do Dia — Casos de Atenção e Urgências">
@@ -86,6 +86,7 @@
             <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
           </svg>
           <span>Radar do Dia</span>
+        </button>
         <button type="button" class="nav-item" data-target-tab="orientador_atestados"
           onclick="window.app.navegarPara('orientador_atestados')" title="Triagem de Faltas e Atestados Médicos">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -125,13 +126,6 @@
             <polyline points="10 9 9 9 8 9"></polyline>
           </svg>
           <span>Relatório Alunos</span>
-        </button>
-        <button type="button" class="nav-item" data-target-tab="assistente"
-          onclick="window.app.navegarPara('assistente')" title="Assistente de Inteligência Artificial">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          <span>Assistente IA</span>
         </button>
       </div>
 
@@ -421,7 +415,14 @@
           <button type="button" class="login-modal-close" onclick="window.app.fecharModalEsqueceuSenha()"
             aria-label="Fechar">&times;</button>
           <div class="login-modal-header">
-            <div class="login-modal-icon">🔑</div>
+            <div class="login-modal-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 2l-2 2m-2-2l2 2"></path>
+                <path d="M15.5 7.5l-3.5 3.5"></path>
+                <circle cx="7.5" cy="16.5" r="5.5"></circle>
+                <path d="M11.5 12.5l7-7"></path>
+              </svg>
+            </div>
             <h2 class="login-modal-title">Recuperação de Acesso</h2>
             <p class="login-modal-desc">Informe seu CPF cadastrado para receber instruções de recuperação da sua conta
               institucional.</p>
@@ -571,7 +572,6 @@
           <!-- BARRA SUPERIOR DO CANVAS (PORTAL ACADÊMICO) -->
           <header class="canvas-header">
             <div class="canvas-header-left">
-              <img src="img/senai-logo.png" alt="SENAI" class="portal-header-senai-logo">
               <h1 class="canvas-header-title">SENAI ROBERTO SIMONSEN</h1>
             </div>
 
@@ -653,7 +653,6 @@
                 <div class="prof-greeting-text">
                   <div class="prof-greeting-title-wrap">
                     <h2 class="prof-greeting-title" id="profGreetingTitle">Olá, Prof. Ismael!</h2>
-                    <img src="img/senai-badge.png" alt="Emblema SENAI" class="prof-greeting-badge">
                   </div>
                   <p class="prof-greeting-sub">Bem-vindo ao seu Diário de Classe.</p>
                 </div>
@@ -703,7 +702,7 @@
                   <span class="prof-status-badge status-aberto" id="profStatusBadge">Aberto</span>
                 </div>
                 <div id="profDevolucaoAlert" style="display:none;" class="prof-devolucao-alert">
-                  <strong>⚠️ Devolvido para Ajustes pela Coordenação</strong>
+                  <strong>Devolvido para Ajustes pela Coordenação</strong>
                   <p id="profDevolucaoMotivo">Aguardando orientações...</p>
                 </div>
                 <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 8px;">
@@ -925,13 +924,22 @@
             <!-- Header Limpo da Coordenação -->
             <div class="coord-portal-header-clean">
               <div class="coord-header-clean-left">
-                <img src="img/senai-logo.png" alt="SENAI" class="portal-header-senai-logo">
                 <div>
                   <h2 class="coord-header-clean-title">SENAI ROBERTO SIMONSEN</h2>
                   <p class="coord-header-clean-sub">Portal do Coordenador • Gestão Acadêmica Integrada</p>
                 </div>
               </div>
               <div class="coord-header-actions">
+                <button type="button" class="btn btn-outline btn-sm" id="btnGerenciarPTDCoord"
+                  onclick="window.coordenadorController.abrirModalGerenciarPTD()" title="Visualizar, editar e exportar Plano de Trabalho Docente (PTD)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                  </svg>
+                  Plano de Trabalho Docente (PTD)
+                </button>
                 <button type="button" class="btn btn-outline btn-sm" id="btnExportarPlanoAulaCoord"
                   onclick="window.coordenadorController.exportarPlanoDeAula()" title="Exportar Plano de Trabalho Docente (PTD) em JSON">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -939,7 +947,7 @@
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                   </svg>
-                  Exportar Plano de Aula (PTD)
+                  Exportar PTD (JSON)
                 </button>
                 <button type="button" class="btn btn-outline btn-sm"
                   onclick="window.coordenadorController.abrirModalSolicitarFechamento()" id="btnSolicitarFechamento"
@@ -949,6 +957,15 @@
                     <polyline points="14 2 14 8 20 8" />
                   </svg>
                   Solicitar Fechamento
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" id="btnCarregarTurmaCoord"
+                  onclick="window.coordenadorController.abrirModalCarregarTurma()" title="Carregar turma via arquivo JSON/CSV ou modelo">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  Carregar Turma
                 </button>
                 <button type="button" class="btn btn-primary" id="btnNovaTurmaCoord"
                   onclick="window.coordenadorController.abrirModalNovaTurma()" title="Criar nova turma">
@@ -1128,7 +1145,7 @@
                       stroke-width="2.5">
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
-                    <span>✓ Marcar todos como presentes</span>
+                    <span>Marcar todos como presentes</span>
                   </button>
                 </div>
               </div>
@@ -1604,7 +1621,7 @@
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
-                  <span>✓ Recalcular Médias</span>
+                  <span>Recalcular Médias</span>
                 </button>
               </div>
 
@@ -1981,7 +1998,7 @@
                <div class="compensacao-table-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
                  <div
                    style="font-size: 14.5px; font-weight: 700; color: #0f172a; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                   <span style="color: #ea580c;">⚠️</span>
+                   <span style="color: #ea580c;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="vertical-align:middle;margin-right:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>
                    <span>Alunos com frequência abaixo de 75%</span>
                  </div>
                  <div class="table-responsive">
@@ -2618,21 +2635,21 @@
                 <!-- Chips / Pré-Opções -->
                 <div class="assistente-chips-wrapper">
                   <div class="assistente-chips-row">
-                    <button type="button" class="assistente-chip-btn" data-action="medias_turmas" onclick="window.assistenteIAController.executarOpcaoPredefinida('medias_turmas', 'Média de todas as turmas')">🏆 Média de todas as turmas</button>
-                    <button type="button" class="assistente-chip-btn" data-action="radar_dia" onclick="window.assistenteIAController.executarOpcaoPredefinida('radar_dia', 'Radar do Dia da Orientação')">🚨 Radar do Dia</button>
-                    <button type="button" class="assistente-chip-btn" data-action="atestados_pendentes" onclick="window.assistenteIAController.executarOpcaoPredefinida('atestados_pendentes', 'Atestados pendentes de validação')">📄 Atestados Pendentes</button>
-                    <button type="button" class="assistente-chip-btn" data-action="compensacoes_abertas" onclick="window.assistenteIAController.executarOpcaoPredefinida('compensacoes_abertas', 'Compensações de ausência em aberto')">🔄 Compensações</button>
-                    <button type="button" class="assistente-chip-btn" data-action="resumo" onclick="window.assistenteIAController.executarOpcaoPredefinida('resumo', 'Resumo geral da turma')">📊 Resumo geral</button>
-                    <button type="button" class="assistente-chip-btn" data-action="risco" onclick="window.assistenteIAController.executarOpcaoPredefinida('risco', 'Quais alunos estão em risco?')">👥 Alunos em risco</button>
-                    <button type="button" class="assistente-chip-btn" data-action="plano" onclick="window.assistenteIAController.executarOpcaoPredefinida('plano', 'Sugira um plano de ação pedagógico')">📋 Plano de ação</button>
-                    <button type="button" class="assistente-chip-btn" data-action="ausentes" onclick="window.assistenteIAController.executarOpcaoPredefinida('ausentes', 'Quais alunos faltaram hoje?')">👤 Ausentes hoje</button>
-                    <button type="button" class="assistente-chip-btn" data-action="media" onclick="window.assistenteIAController.executarOpcaoPredefinida('media', 'Qual é a média geral da turma?')">🏆 Média da turma</button>
-                    <button type="button" class="assistente-chip-btn" data-action="abaixo70" onclick="window.assistenteIAController.executarOpcaoPredefinida('abaixo70', 'Alunos com nota abaixo de 70')">📄 Notas abaixo de 70</button>
-                    <button type="button" class="assistente-chip-btn" data-action="freq80" onclick="window.assistenteIAController.executarOpcaoPredefinida('freq80', 'Alunos com frequência abaixo de 80%')">📉 Frequência < 80%</button>
-                    <button type="button" class="assistente-chip-btn" data-action="observacoes" onclick="window.assistenteIAController.executarOpcaoPredefinida('observacoes', 'Listar observações pedagógicas')">💬 Observações</button>
-                    <button type="button" class="assistente-chip-btn" data-action="ocorrencias" onclick="window.assistenteIAController.executarOpcaoPredefinida('ocorrencias', 'Listar ocorrências disciplinares')">📅 Ocorrências</button>
-                    <button type="button" class="assistente-chip-btn" data-action="reservas" onclick="window.assistenteIAController.executarOpcaoPredefinida('reservas', 'Consultar reservas de laboratório')">📌 Reservas</button>
-                    <button type="button" class="assistente-chip-btn" data-action="destaques" onclick="window.assistenteIAController.executarOpcaoPredefinida('destaques', 'Alunos destaque em rendimento')">⭐ Destaques</button>
+                    <button type="button" class="assistente-chip-btn" data-action="medias_turmas" onclick="window.assistenteIAController.executarOpcaoPredefinida('medias_turmas', 'Média de todas as turmas')">Média de todas as turmas</button>
+                    <button type="button" class="assistente-chip-btn" data-action="radar_dia" onclick="window.assistenteIAController.executarOpcaoPredefinida('radar_dia', 'Radar do Dia da Orientação')">Radar do Dia</button>
+                    <button type="button" class="assistente-chip-btn" data-action="atestados_pendentes" onclick="window.assistenteIAController.executarOpcaoPredefinida('atestados_pendentes', 'Atestados pendentes de validação')">Atestados Pendentes</button>
+                    <button type="button" class="assistente-chip-btn" data-action="compensacoes_abertas" onclick="window.assistenteIAController.executarOpcaoPredefinida('compensacoes_abertas', 'Compensações de ausência em aberto')">Compensações</button>
+                    <button type="button" class="assistente-chip-btn" data-action="resumo" onclick="window.assistenteIAController.executarOpcaoPredefinida('resumo', 'Resumo geral da turma')">Resumo geral</button>
+                    <button type="button" class="assistente-chip-btn" data-action="risco" onclick="window.assistenteIAController.executarOpcaoPredefinida('risco', 'Quais alunos estão em risco?')">Alunos em risco</button>
+                    <button type="button" class="assistente-chip-btn" data-action="plano" onclick="window.assistenteIAController.executarOpcaoPredefinida('plano', 'Sugira um plano de ação pedagógico')">Plano de ação</button>
+                    <button type="button" class="assistente-chip-btn" data-action="ausentes" onclick="window.assistenteIAController.executarOpcaoPredefinida('ausentes', 'Quais alunos faltaram hoje?')">Ausentes hoje</button>
+                    <button type="button" class="assistente-chip-btn" data-action="media" onclick="window.assistenteIAController.executarOpcaoPredefinida('media', 'Qual é a média geral da turma?')">Média da turma</button>
+                    <button type="button" class="assistente-chip-btn" data-action="abaixo70" onclick="window.assistenteIAController.executarOpcaoPredefinida('abaixo70', 'Alunos com nota abaixo de 70')">Notas abaixo de 70</button>
+                    <button type="button" class="assistente-chip-btn" data-action="freq80" onclick="window.assistenteIAController.executarOpcaoPredefinida('freq80', 'Alunos com frequência abaixo de 80%')">Frequência &lt; 80%</button>
+                    <button type="button" class="assistente-chip-btn" data-action="observacoes" onclick="window.assistenteIAController.executarOpcaoPredefinida('observacoes', 'Listar observações pedagógicas')">Observações</button>
+                    <button type="button" class="assistente-chip-btn" data-action="ocorrencias" onclick="window.assistenteIAController.executarOpcaoPredefinida('ocorrencias', 'Listar ocorrências disciplinares')">Ocorrências</button>
+                    <button type="button" class="assistente-chip-btn" data-action="reservas" onclick="window.assistenteIAController.executarOpcaoPredefinida('reservas', 'Consultar reservas de laboratório')">Reservas</button>
+                    <button type="button" class="assistente-chip-btn" data-action="destaques" onclick="window.assistenteIAController.executarOpcaoPredefinida('destaques', 'Alunos destaque em rendimento')">Destaques</button>
                   </div>
                 </div>
 
@@ -2664,7 +2681,6 @@
               <!-- Cabeçalho da Página: Título + Breadcrumb -->
               <div class="aluno-freq-page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 14px;">
-                  <img src="img/senai-logo.png" alt="SENAI" class="portal-header-senai-logo">
                   <div>
                     <h1 class="aluno-freq-main-title">SENAI ROBERTO SIMONSEN</h1>
                     <div class="aluno-freq-breadcrumb">
@@ -2718,10 +2734,6 @@
                   </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                  <button type="button" class="btn btn-outline btn-sm" onclick="window.app.abrirModalPerfilAluno()" style="font-size:12px; font-weight:600; padding:6px 12px; display:inline-flex; align-items:center; gap:5px; border-radius:9999px;">
-                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    <span>Meu Perfil</span>
-                  </button>
                   <span class="aluno-badge-matricula-ativa" id="alunoHeaderStatusMatricula">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3">
                       <polyline points="20 6 9 17 4 12"></polyline>
@@ -2748,7 +2760,7 @@
 
                 <div class="acesso-rapido-grid-2x2">
                   <!-- 1. Minhas Disciplinas -->
-                  <div class="pastel-card-horizontal pastel-card-blue" onclick="window.app.alternarFreqTab('visaoGeral')" role="button" tabindex="0">
+                  <div class="pastel-card-horizontal pastel-card-blue" onclick="window.app.alternarFreqTab('visaoGeral', true)" role="button" tabindex="0">
                     <div class="pastel-card-icon-box">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -2765,7 +2777,7 @@
                   </div>
 
                   <!-- 2. Boletim de Notas (0 a 100) -->
-                  <div class="pastel-card-horizontal pastel-card-purple" onclick="window.app.alternarFreqTab('notas')" role="button" tabindex="0">
+                  <div class="pastel-card-horizontal pastel-card-purple" onclick="window.app.alternarFreqTab('notas', true)" role="button" tabindex="0">
                     <div class="pastel-card-icon-box">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -2784,7 +2796,7 @@
                   </div>
 
                   <!-- 3. Frequência Detalhada -->
-                  <div class="pastel-card-horizontal pastel-card-teal" onclick="window.app.alternarFreqTab('historicoAulas')" role="button" tabindex="0">
+                  <div class="pastel-card-horizontal pastel-card-teal" onclick="window.app.alternarFreqTab('historicoAulas', true)" role="button" tabindex="0">
                     <div class="pastel-card-icon-box">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -2803,7 +2815,7 @@
                   </div>
 
                   <!-- 4. Baixar Boletim em PDF -->
-                  <div class="pastel-card-horizontal pastel-card-rose" onclick="window.relatoriosController.exportarPDFAluno('aluno_boletim')" role="button" tabindex="0">
+                  <div class="pastel-card-horizontal pastel-card-rose" onclick="window.app.abrirModalBoletimSemestre()" role="button" tabindex="0">
                     <div class="pastel-card-icon-box">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -2819,32 +2831,6 @@
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              <!-- Card: Calendário Oficial e Prazos Acadêmicos do Aluno -->
-              <div class="aluno-freq-card" style="margin-bottom: 22px; padding: 20px;" id="alunoCardPrazosOficiais">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <div style="width:32px; height:32px; border-radius:8px; background:rgba(2,132,199,0.1); display:flex; align-items:center; justify-content:center;">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 style="font-size:14px; font-weight:700; color:#0f172a; margin:0;">Calendário Oficial • Prazos Acadêmicos e Avaliações</h3>
-                      <p style="font-size:12px; color:#64748b; margin:2px 0 0 0;">Fique atento aos prazos de fechamento de notas e semanas avaliativas</p>
-                    </div>
-                  </div>
-                  <button type="button" class="btn btn-outline btn-sm" onclick="window.app.navegarPara('calendario')" style="font-size:12px; padding:6px 12px;">
-                    Calendário Completo &rarr;
-                  </button>
-                </div>
-                <div id="alunoPrazosOficiaisContainer" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px;">
-                  <!-- Preenchido dinamicamente via JS -->
                 </div>
               </div>
 
@@ -3187,23 +3173,17 @@
                       </div>
                     </div>
 
-                    <!-- Abas de Seleção de Bimestre -->
-                    <div class="aluno-bimestres-tabs-bar" style="display:flex; align-items:center; gap:8px; margin-bottom:18px; padding:6px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; flex-wrap:wrap;">
-                      <span style="font-size:12px; font-weight:700; color:#475569; padding:0 8px; text-transform:uppercase; letter-spacing:0.5px;">Bimestre:</span>
-                      <button type="button" class="btn-bimestre-filtro active" data-bimestre="TODOS" onclick="window.app.filtrarNotasAlunoBimestre('TODOS')" style="padding:6px 14px; border-radius:7px; border:none; background:#005594; color:#ffffff; font-size:12.5px; font-weight:600; cursor:pointer; transition:all 0.15s ease;">
-                        Consolidado (Todos)
+                    <!-- Abas de Seleção de Semestre -->
+                    <div class="aluno-semestres-tabs-bar" style="display:flex; align-items:center; gap:8px; margin-bottom:18px; padding:6px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; flex-wrap:wrap;">
+                      <span style="font-size:12px; font-weight:700; color:#475569; padding:0 8px; text-transform:uppercase; letter-spacing:0.5px;">Semestre:</span>
+                      <button type="button" class="btn-semestre-filtro active" data-semestre="TODOS" onclick="window.app.filtrarNotasAlunoSemestre('TODOS')" style="padding:6px 14px; border-radius:7px; border:none; background:#005594; color:#ffffff; font-size:12.5px; font-weight:600; cursor:pointer; transition:all 0.15s ease;">
+                        Consolidado
                       </button>
-                      <button type="button" class="btn-bimestre-filtro" data-bimestre="1" onclick="window.app.filtrarNotasAlunoBimestre(1)" style="padding:6px 14px; border-radius:7px; border:1px solid #cbd5e1; background:#ffffff; color:#334155; font-size:12.5px; font-weight:600; cursor:pointer; transition:all 0.15s ease;">
-                        1º Bimestre
+                      <button type="button" class="btn-semestre-filtro" data-semestre="1" onclick="window.app.filtrarNotasAlunoSemestre(1)" style="padding:6px 14px; border-radius:7px; border:1px solid #cbd5e1; background:#ffffff; color:#334155; font-size:12.5px; font-weight:600; cursor:pointer; transition:all 0.15s ease;">
+                        1º Semestre
                       </button>
-                      <button type="button" class="btn-bimestre-filtro" data-bimestre="2" onclick="window.app.filtrarNotasAlunoBimestre(2)" style="padding:6px 14px; border-radius:7px; border:1px solid #cbd5e1; background:#ffffff; color:#334155; font-size:12.5px; font-weight:600; cursor:pointer; transition:all 0.15s ease;">
-                        2º Bimestre
-                      </button>
-                      <button type="button" class="btn-bimestre-filtro" data-bimestre="3" onclick="window.app.filtrarNotasAlunoBimestre(3)" style="padding:6px 14px; border-radius:7px; border:1px solid #cbd5e1; background:#ffffff; color:#334155; font-size:12.5px; font-weight:600; cursor:pointer; transition:all 0.15s ease;">
-                        3º Bimestre
-                      </button>
-                      <button type="button" class="btn-bimestre-filtro" data-bimestre="4" onclick="window.app.filtrarNotasAlunoBimestre(4)" style="padding:6px 14px; border-radius:7px; border:1px solid #cbd5e1; background:#ffffff; color:#334155; font-size:12.5px; font-weight:600; cursor:pointer; transition:all 0.15s ease;">
-                        4º Bimestre
+                      <button type="button" class="btn-semestre-filtro" data-semestre="2" onclick="window.app.filtrarNotasAlunoSemestre(2)" style="padding:6px 14px; border-radius:7px; border:1px solid #cbd5e1; background:#ffffff; color:#334155; font-size:12.5px; font-weight:600; cursor:pointer; transition:all 0.15s ease;">
+                        2º Semestre
                       </button>
                     </div>
 
@@ -3241,21 +3221,13 @@
               <!-- Topbar Principal -->
               <div class="orientador-topbar">
                 <div class="orientador-titlebox">
-                  <img src="img/senai-logo.png" alt="SENAI" class="portal-header-senai-logo">
                   <div>
                     <h1 class="orientador-main-title">SENAI ROBERTO SIMONSEN</h1>
-                    <p class="orientador-main-sub">Portal das Orientadoras • Acompanhamento diário de assiduidade, escuta ativa e prioridades.</p>
+                    <p class="orientador-main-sub">Portal dos Orientadores • Acompanhamento diário de assiduidade, escuta ativa e prioridades.</p>
                   </div>
                 </div>
 
                 <div class="orientador-topbar-actions">
-                  <div class="orientador-select-wrap">
-                    <label class="orientador-field-label">Turma Ativa:</label>
-                    <select class="orientador-select orientador-turma-select" onchange="window.portalOrientadorController.onTurmaChange(this.value)">
-                      <!-- Preenchido via JS -->
-                    </select>
-                  </div>
-
                   <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato()" title="Registrar contato telefônico, presencial ou WhatsApp com aluno ou responsável">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                     <span>+ Registrar Contato</span>
@@ -3359,13 +3331,6 @@
                 </div>
 
                 <div class="orientador-topbar-actions">
-                  <div class="orientador-select-wrap">
-                    <label class="orientador-field-label">Turma Ativa:</label>
-                    <select class="orientador-select orientador-turma-select" onchange="window.portalOrientadorController.onTurmaChange(this.value)">
-                      <!-- Preenchido via JS -->
-                    </select>
-                  </div>
-
                   <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato()" title="Registrar contato telefônico, presencial ou WhatsApp com aluno ou responsável">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                     <span>+ Registrar Contato</span>
@@ -3438,13 +3403,6 @@
                 </div>
 
                 <div class="orientador-topbar-actions">
-                  <div class="orientador-select-wrap">
-                    <label class="orientador-field-label">Turma Ativa:</label>
-                    <select class="orientador-select orientador-turma-select" onchange="window.portalOrientadorController.onTurmaChange(this.value)">
-                      <!-- Preenchido via JS -->
-                    </select>
-                  </div>
-
                   <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato()" title="Registrar contato telefônico, presencial ou WhatsApp com aluno ou responsável">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                     <span>+ Registrar Contato</span>
@@ -3520,13 +3478,6 @@
                 </div>
 
                 <div class="orientador-topbar-actions">
-                  <div class="orientador-select-wrap">
-                    <label class="orientador-field-label">Turma Ativa:</label>
-                    <select class="orientador-select orientador-turma-select" onchange="window.portalOrientadorController.onTurmaChange(this.value)">
-                      <!-- Preenchido via JS -->
-                    </select>
-                  </div>
-
                   <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato()" title="Registrar contato telefônico, presencial ou WhatsApp com aluno ou responsável">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                     <span>+ Registrar Contato</span>
@@ -3565,7 +3516,6 @@
               <!-- Topbar Principal -->
               <div class="orientador-topbar">
                 <div class="orientador-titlebox">
-                  <img src="img/senai-logo.png" alt="SENAI" class="portal-header-senai-logo">
                   <div>
                     <h1 class="orientador-main-title">SENAI ROBERTO SIMONSEN</h1>
                     <p class="orientador-main-sub">Relatório Geral de Estudantes • Assiduidade, faltas, compensações e histórico de contato.</p>
@@ -3573,13 +3523,6 @@
                 </div>
 
                 <div class="orientador-topbar-actions">
-                  <div class="orientador-select-wrap">
-                    <label class="orientador-field-label">Turma Ativa:</label>
-                    <select class="orientador-select orientador-turma-select" onchange="window.portalOrientadorController.onTurmaChange(this.value)">
-                      <!-- Preenchido via JS -->
-                    </select>
-                  </div>
-
                   <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.exportarRelatorioAlunosPDF()" title="Exportar Relatório Acadêmico de Assiduidade em PDF">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                     <span>Exportar PDF</span>
@@ -3660,14 +3603,14 @@
                   <table class="radar-urgency-table" style="width:100%;">
                     <thead>
                       <tr>
-                        <th>ESTUDANTE</th>
-                        <th class="center">FREQUÊNCIA</th>
-                        <th class="center">FALTAS S/ JUST.</th>
-                        <th class="center">ATRASOS</th>
-                        <th class="center">COMPENSAÇÕES</th>
-                        <th>ÚLTIMO CONTATO</th>
-                        <th class="center">SITUAÇÃO</th>
-                        <th class="center">AÇÕES</th>
+                        <th class="col-aluno">ESTUDANTE</th>
+                        <th class="col-freq center">FREQUÊNCIA</th>
+                        <th class="col-faltas center">FALTAS S/ JUST.</th>
+                        <th class="col-atrasos center">ATRASOS</th>
+                        <th class="col-comp center">COMPENSAÇÕES</th>
+                        <th class="col-contato">ÚLTIMO CONTATO</th>
+                        <th class="col-situacao center">SITUAÇÃO</th>
+                        <th class="col-acoes center">AÇÕES</th>
                       </tr>
                     </thead>
                     <tbody id="orientadorRelatorioTbody">
@@ -3703,7 +3646,7 @@
                 </div>
 
                 <!-- Filtro de Turma -->
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div id="containerFiltroTurmaMateriais" style="display: flex; align-items: center; gap: 8px;">
                   <label for="selectMateriaisTurmaFiltro" style="font-size: 13px; font-weight: 600; color: #475569;">Turma / Disciplina:</label>
                   <select id="selectMateriaisTurmaFiltro" class="filter-select" onchange="window.app.filtrarMateriaisPorTurma(this.value)" style="min-width: 220px;">
                     <!-- Preenchido via JS -->
@@ -3798,16 +3741,8 @@
                   </div>
                 </div>
 
-                <!-- Botão de Ação e Seletor de Modo de Visualização -->
+                <!-- Botão de Ação -->
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                  <div class="calendario-modo-view-tabs" style="display: flex; background: #f1f5f9; padding: 4px; border-radius: 8px; gap: 4px;">
-                    <button type="button" class="tab-btn-cal-modo active" id="btnCalModoLista" onclick="window.app.alternarModoCalendario('lista')" style="padding: 6px 14px; font-size: 12px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; background: #ffffff; color: #0f172a; box-shadow: 0 1px 2px rgba(0,0,0,0.06);">
-                      Lista / Detalhado
-                    </button>
-                    <button type="button" class="tab-btn-cal-modo" id="btnCalModoAnual" onclick="window.app.alternarModoCalendario('anual')" style="padding: 6px 14px; font-size: 12px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; background: transparent; color: #64748b;">
-                      Visão Anual (12 Meses)
-                    </button>
-                  </div>
                   <div id="calendarioAcoesCoord" style="display: flex; gap: 10px; align-items: center;">
                     <button type="button" class="btn btn-primary" onclick="window.app.abrirModalNovoEventoCalendario()" style="display: inline-flex; align-items: center; gap: 6px;">
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -3836,12 +3771,12 @@
                 </button>
               </div>
 
-              <!-- Container Visão Anual (12 Meses Compactos) -->
-              <div id="calendarioVisaoAnual" style="display: none; margin-bottom: 24px;">
+              <!-- Container Visão Anual (12 Meses Compactos) - Sempre visível no topo -->
+              <div id="calendarioVisaoAnual" style="display: block; margin-bottom: 28px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                   <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 16px; font-weight: 800; color: #0f172a;" id="calAnoAtivoTitulo">Ano Letivo 2026</span>
-                    <span style="font-size: 12px; color: #64748b;">(Clique em um dia para inspecionar ou cadastrar evento)</span>
+                    <span style="font-size: 16px; font-weight: 800; color: #0f172a;" id="calAnoAtivoTitulo">Visão Anual • Ano Letivo 2026</span>
+                    <span style="font-size: 12px; color: #64748b;">(Clique em qualquer dia para inspecionar ou cadastrar evento)</span>
                   </div>
                   <div style="display: flex; align-items: center; gap: 12px; font-size: 11px;">
                     <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #e11d48; display: inline-block;"></span> Fechamento</span>
@@ -3866,7 +3801,22 @@
                 </div>
               </div>
 
-              <!-- Lista de Eventos Oficiais -->
+              <!-- Divisor / Título da Lista Detalhada de Eventos -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
+                <h3 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                  </svg>
+                  Lista Detalhada de Eventos e Prazos Oficiais
+                </h3>
+              </div>
+
+              <!-- Lista de Eventos Oficiais - Sempre visível logo abaixo na mesma tela -->
               <div id="gridEventosCalendario" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px;">
                 <!-- Preenchido via JS -->
               </div>
@@ -4174,7 +4124,7 @@
 
         <div
           style="background:var(--bg-card-subtle); padding:12px; border-radius:8px; border:1px solid var(--border-color); font-size:12px; line-height:1.5; color:var(--text-muted);">
-          🛡️ <strong>Privacidade:</strong> Sua chave é armazenada de forma segura exclusivamente no armazenamento local
+          <strong>Privacidade:</strong> Sua chave é armazenada de forma segura exclusivamente no armazenamento local
           do seu navegador (LocalStorage) e nunca é enviada a servidores intermediários.
         </div>
       </div>
@@ -4244,6 +4194,159 @@
           Criar Turma
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Carregar Turma via Arquivo JSON/CSV ou Modelo (Coordenador) -->
+  <div id="modalCoordenadorCarregarTurma" class="modal-overlay">
+    <div class="modal-box" style="max-width:620px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Carregar Turma (Importação / Modelo)</h3>
+        <button type="button" class="btn-close-modal"
+          onclick="window.app.fecharModal('modalCoordenadorCarregarTurma')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+          Importe uma nova turma através de arquivo estruturado (.json ou .csv) ou utilize um modelo oficial pré-configurado da grade SENAI.
+        </p>
+
+        <!-- Abas do Modal: Arquivo vs Modelo Pronto -->
+        <div style="display:flex; gap:10px; margin-bottom:16px;">
+          <button type="button" class="btn btn-sm btn-outline active" id="btnAbaCarregarArquivo"
+            onclick="window.coordenadorController.alternarAbaCarregarTurma('arquivo')">
+            Importar Arquivo (.json / .csv)
+          </button>
+          <button type="button" class="btn btn-sm btn-outline" id="btnAbaCarregarModelo"
+            onclick="window.coordenadorController.alternarAbaCarregarTurma('modelo')">
+            Modelo Pré-configurado SENAI
+          </button>
+        </div>
+
+        <!-- Painel 1: Arquivo -->
+        <div id="painelCarregarArquivo">
+          <div style="border: 2px dashed #cbd5e1; border-radius: 10px; padding: 24px; text-align: center; background: #f8fafc; cursor: pointer;"
+            onclick="document.getElementById('inputArquivoCarregarTurma').click()">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" style="margin: 0 auto 10px auto; display: block;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <p style="font-size: 13.5px; font-weight: 600; color: #0f172a; margin: 0 0 4px 0;">Clique para selecionar arquivo JSON ou CSV</p>
+            <p style="font-size: 11.5px; color: #64748b; margin: 0;">Suporta arquivos exportados do SIGA, PTD ou planilha de alunos</p>
+            <input type="file" id="inputArquivoCarregarTurma" accept=".json,.csv" style="display:none;"
+              onchange="window.coordenadorController.onArquivoTurmaSelecionado(this)">
+          </div>
+          <div id="previewArquivoCarregarTurma" style="display:none; margin-top:14px; padding:12px 14px; background:#f1f5f9; border-radius:8px; font-size:12px; color:#334155;"></div>
+        </div>
+
+        <!-- Painel 2: Modelo Pré-configurado -->
+        <div id="painelCarregarModelo" style="display:none;">
+          <div class="login-form-group" style="margin-bottom:14px;">
+            <label class="filter-label">Selecione o Modelo da Grade Oficial SENAI *</label>
+            <select id="selectModeloPreconfigurado" class="filter-select" style="width:100%;">
+              <option value="IOT_2026">Técnico em Internet das Coisas (IoT) - Termo 1 (2026/1 - Tarde)</option>
+              <option value="AUTO_2026">Técnico em Automação Industrial - Termo 2 (2026/1 - Manhã)</option>
+              <option value="ELETRO_2026">Técnico em Eletroeletrônica - Termo 1 (2026/1 - Noite)</option>
+              <option value="DEV_2026">Técnico em Desenvolvimento de Sistemas - Termo 2B (2026/2 - Manhã)</option>
+            </select>
+          </div>
+          <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:12px 14px; font-size:12px; color:#1e40af;">
+            <strong>O que será gerado:</strong> Nova turma com código padronizado SENAI, 30 vagas ativas, matriz de Unidades Curriculares, atribuição docente e 10 estudantes matriculados com números de chamada e prontuários.
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="justify-content:flex-end; display:flex; gap:8px;">
+        <button type="button" class="btn btn-secondary"
+          onclick="window.app.fecharModal('modalCoordenadorCarregarTurma')">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmarCarregamentoTurma"
+          onclick="window.coordenadorController.executarCarregamentoTurma()">
+          Carregar e Salvar Turma
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Visualizar e Editar PTD da UC (Coordenador) -->
+  <div id="modalCoordenadorPTD" class="modal-overlay">
+    <div class="modal-box" style="max-width:780px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Plano de Trabalho Docente (PTD) • Conteúdos da UC</h3>
+        <button type="button" class="btn-close-modal"
+          onclick="window.app.fecharModal('modalCoordenadorPTD')">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height:75vh; overflow-y:auto; padding:18px 24px;">
+        
+        <!-- Seleção de Curso e UC -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:16px;">
+          <div>
+            <label class="filter-label" style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">Curso:</label>
+            <select id="ptdModalCursoSelect" class="filter-select" style="width:100%;" onchange="window.coordenadorController.onPtdModalCursoChange(this.value)">
+              <!-- Preenchido via JS -->
+            </select>
+          </div>
+          <div>
+            <label class="filter-label" style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">Unidade Curricular (UC):</label>
+            <select id="ptdModalUcSelect" class="filter-select" style="width:100%;" onchange="window.coordenadorController.onPtdModalUcChange(this.value)">
+              <!-- Preenchido via JS -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Metadados da UC -->
+        <div style="display:grid; grid-template-columns: 1fr 2fr; gap:14px; margin-bottom:16px;">
+          <div>
+            <label class="filter-label" style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">Carga Horária (h):</label>
+            <input type="number" id="ptdModalCargaHoraria" class="filter-select" style="width:100%;" min="20" max="240" value="80">
+          </div>
+          <div>
+            <label class="filter-label" style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">Docente Titular Responsável:</label>
+            <input type="text" id="ptdModalDocenteTitular" class="filter-select" style="width:100%;" value="Nathan Santana Matos" placeholder="Nome do Professor">
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <label class="filter-label" style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">Competências Gerais e Metodologia SENAI:</label>
+          <textarea id="ptdModalCompetencias" class="filter-select" style="width:100%; height:64px; resize:vertical; font-size:12.5px;" placeholder="Descreva as competências e capacidades técnicas a serem desenvolvidas..."></textarea>
+        </div>
+
+        <!-- Grade de Conteúdos das Aulas Programadas (Alimenta o Conteúdo Ministrado do Diário) -->
+        <div style="border-top:1px solid #e2e8f0; padding-top:16px; margin-top:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div>
+              <h4 style="margin:0; font-size:14px; font-weight:700; color:#0f172a;">Conteúdos Programados das Aulas (PTD)</h4>
+              <p style="margin:2px 0 0 0; font-size:11.5px; color:#64748b;">Estes tópicos aparecem automaticamente no Diário do Professor para registrar o conteúdo ministrado.</p>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="window.coordenadorController.adicionarTopicoPtdLinha()">
+              + Adicionar Conteúdo
+            </button>
+          </div>
+
+          <div id="ptdTopicosContainer" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- Linhas de tópicos preenchidas dinamicamente -->
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="justify-content:space-between; display:flex; gap:8px;">
+        <button type="button" class="btn btn-outline" onclick="window.coordenadorController.exportarPtdUcAtual()" title="Baixar PTD estruturado em JSON">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Exportar PTD (JSON)
+        </button>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-secondary"
+            onclick="window.app.fecharModal('modalCoordenadorPTD')">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="window.coordenadorController.salvarPtdUcAtual()">
+            Salvar Conteúdos do PTD
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
     </div>
   </div>
 
@@ -4553,16 +4656,16 @@
           <div style="margin-top:4px; color:#475569;">Motivo declarado: <em id="validarAtestadoMotivo">—</em></div>
         </div>
         <div class="login-form-group" style="margin-bottom:12px;">
-          <label class="filter-label">Parecer Técnico da Orientadora (Opcional)</label>
+          <label class="filter-label">Parecer Técnico da Orientação Educacional (Opcional)</label>
           <textarea id="validarAtestadoParecer" class="filter-select" style="width:100%; height:65px; resize:vertical;" placeholder="Observações pedagógicas ou fundamento da decisão..."></textarea>
         </div>
       </div>
       <div class="modal-footer" style="justify-content:space-between; display:flex; gap:8px;">
         <button type="button" class="btn btn-secondary" onclick="window.app.fecharModal('modalValidarAtestadoOrientador')">Cancelar</button>
         <div style="display:flex; gap:6px;">
-          <button type="button" class="btn btn-danger btn-sm" onclick="window.portalOrientadorController.confirmarValidacaoAtestado('INJUSTIFICADA')">✕ Recusar</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="window.portalOrientadorController.confirmarValidacaoAtestado('INJUSTIFICADA')">Recusar</button>
           <button type="button" class="btn btn-warning btn-sm" onclick="window.portalOrientadorController.confirmarValidacaoAtestado('A_COMPENSAR')">Compensação</button>
-          <button type="button" class="btn btn-success btn-sm" onclick="window.portalOrientadorController.confirmarValidacaoAtestado('ABONADA')">✓ Abonar (D)</button>
+          <button type="button" class="btn btn-success btn-sm" onclick="window.portalOrientadorController.confirmarValidacaoAtestado('ABONADA')">Abonar (D)</button>
         </div>
       </div>
     </div>

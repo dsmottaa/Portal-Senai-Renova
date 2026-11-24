@@ -269,12 +269,17 @@ body {
   transform: none;
 }
 
-/* Item Ativo: Fundo vermelho arredondado (#e30613) com texto e ícone brancos em negrito */
-.sidebar .nav-item.active {
-  background-color: #e30613 !important;
+/* Item Ativo: Fundo vermelho institucional limpo (#c3161c) sem efeito neon/glow */
+.sidebar .nav-item.active,
+#sidebarCoordSection .nav-item.active,
+#sidebarOrientSection .nav-item.active,
+#sidebarAlunoSection .nav-item.active,
+#sidebarProfSection .nav-item.active {
+  background-color: #c3161c !important;
   color: #ffffff !important;
   border-radius: 8px !important;
-  box-shadow: 0 4px 14px rgba(227, 6, 19, 0.4);
+  box-shadow: none !important;
+  border: none !important;
 }
 
 .sidebar .nav-item.active span {
@@ -289,9 +294,6 @@ body {
 
 .sidebar .nav-item.active::after {
   display: none !important;
-}
-
-border-radius: 4px;
 }
 
 /* Ícone com indicador de subitens e badge */

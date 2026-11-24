@@ -237,45 +237,80 @@ class CoordenadorController {
     const el = document.getElementById('coordFechamentoLista');
     if (!el) return;
 
-    // Regra SENAI: Só exibe na fila da coordenação turmas onde 100% dos professores responsáveis fecharam sua etapa
-    const solicitacoes = this._getSolicitacoes().filter(function(s) {
-      if (s.status !== 'AGUARDANDO') return false;
-      const turma = (window.db.data.turmas || []).find(function(t) { return t.id === s.turmaId; });
-      if (turma && turma.professoresResponsaveis && turma.professoresResponsaveis.length > 0) {
-        return turma.professoresResponsaveis.every(function(p) { return p.fechado === true; });
-      }
-      return true;
-    });
     const self = this;
+    const turmas = window.db.data.turmas || [];
+    const solicitacoes = this._getSolicitacoes();
 
-    if (solicitacoes.length === 0) {
-      el.innerHTML = '<div class="coord-empty-state" style="padding:32px 0;"><p>Nenhum diário aguardando aprovação ou com todas as etapas docentes concluídas. ✓</p></div>';
+    if (turmas.length === 0) {
+      el.innerHTML = '<div class="coord-empty-state" style="padding:32px 0;"><p>Nenhuma turma cadastrada no sistema.</p></div>';
       return;
     }
 
-    el.innerHTML = solicitacoes.map(function(sol) {
-      const turma = (window.db.data.turmas || []).find(function(t) { return t.id === sol.turmaId; });
-      const docente = (window.db.data.usuarios || []).find(function(u) { return u.id === sol.docenteId; });
-      const sintese = window.db.getSinteseConsolidada(sol.turmaId, null);
+    let cardsHtml = '';
+
+    turmas.forEach(function(turma) {
+      const sol = solicitacoes.find(function(s) { return s.turmaId === turma.id; });
+      const docente = (window.db.data.usuarios || []).find(function(u) { return u.id === (sol ? sol.docenteId : turma.docenteId); });
+      const sintese = window.db.getSinteseConsolidada ? window.db.getSinteseConsolidada(turma.id, null) : null;
       const alunos = (sintese && sintese.alunos) ? sintese.alunos : [];
-      const totalAtivos = alunos.filter(function(a) { return a.aluno.statusMatricula === 'ATIVO'; }).length;
+      const totalAtivos = alunos.filter(function(a) { return a.aluno && a.aluno.statusMatricula === 'ATIVO'; }).length || turma.totalAlunos || 0;
       const medias = alunos.filter(function(a) { return a.media > 0; }).map(function(a) { return a.media; });
       const mediaGeral = medias.length ? (medias.reduce(function(s,v) { return s+v; }, 0) / medias.length).toFixed(1) : '—';
-      const freqs = alunos.filter(function(a) { return a.aluno.statusMatricula === 'ATIVO'; }).map(function(a) { return a.freqPorcentagem; });
+      const freqs = alunos.filter(function(a) { return a.aluno && a.aluno.statusMatricula === 'ATIVO'; }).map(function(a) { return a.freqPorcentagem; });
       const freqMedia = freqs.length ? (freqs.reduce(function(s,v) { return s+v; }, 0) / freqs.length).toFixed(1) : '—';
-      const emRisco = alunos.filter(function(a) { return a.aluno.statusMatricula === 'ATIVO' && (a.media < 70 || a.freqPorcentagem < 75); }).length;
+      const emRisco = alunos.filter(function(a) { return a.aluno && a.aluno.statusMatricula === 'ATIVO' && (a.media < 70 || a.freqPorcentagem < 75); }).length;
 
-      // Checklist dos professores responsáveis da turma
+      const isFechado = turma.status === 'CONCLUIDA' || turma.diarioFechado === true || (sol && sol.status === 'APROVADO');
+      const isAguardando = sol && sol.status === 'AGUARDANDO';
+
+      let statusBadge = '';
+      let actionButtons = '';
+
+      if (isFechado) {
+        statusBadge = '<span class="coord-badge badge-aprovado" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;">✓ Diário Fechado e Homologado</span>';
+        actionButtons = `
+          <button type="button" class="btn btn-outline btn-sm" onclick="window.coordenadorController.reabrirDiario(${turma.id})" style="border-color:#0284c7; color:#0284c7; font-weight:600;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+            </svg>
+            Reabrir Diário
+          </button>
+        `;
+      } else if (isAguardando) {
+        statusBadge = '<span class="coord-badge badge-aguardando" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a;">Aguardando Homologação (100% Docente)</span>';
+        actionButtons = `
+          <button type="button" class="btn btn-outline btn-sm" onclick="window.coordenadorController.recusarFechamento(${sol.id})">Devolver para Ajustes</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="window.coordenadorController.aprovarFechamento(${sol.id})">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:2px;"><polyline points="20 6 9 17 4 12"/></svg>
+            Autorizar Fechamento
+          </button>
+        `;
+      } else {
+        statusBadge = '<span class="coord-badge badge-aberto" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">Diário Aberto • Em Lançamento</span>';
+        actionButtons = `
+          <button type="button" class="btn btn-outline btn-sm" onclick="window.app.abrirDiarioComTurma(${turma.id})">Inspecionar Aulas</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="window.coordenadorController.fecharDiarioDireto(${turma.id})">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Fechar Diário
+          </button>
+        `;
+      }
+
+      // Checklist de professores
       const profsResponsaveis = (turma && turma.professoresResponsaveis) ? turma.professoresResponsaveis : [];
       const checklistHtml = profsResponsaveis.length ? `
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; margin:10px 0; font-size:12px;">
-          <strong style="color:#0f172a; display:block; margin-bottom:4px;">Checklist de Professores Responsáveis:</strong>
+          <strong style="color:#0f172a; display:block; margin-bottom:4px;">Docentes Vinculados:</strong>
           <div style="display:flex; flex-direction:column; gap:4px;">
             ${profsResponsaveis.map(p => `
               <div style="display:flex; align-items:center; justify-content:space-between;">
                 <span>${p.nome} <em style="color:#64748b;">(${p.papel || 'Docente'})</em></span>
-                <span class="badge ${p.fechado ? 'bg-success text-white' : 'bg-warning text-dark'}" style="font-size:10px; padding:2px 6px; border-radius:4px;">
-                  ${p.fechado ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:2px;"><polyline points="20 6 9 17 4 12"></polyline></svg> Etapa Concluída' : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:2px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Pendente'}
+                <span class="badge ${p.fechado ? 'bg-success text-white' : 'bg-secondary text-white'}" style="font-size:10px; padding:2px 6px; border-radius:4px;">
+                  ${p.fechado ? '✓ Etapa Concluída' : 'Em Andamento'}
                 </span>
               </div>
             `).join('')}
@@ -283,32 +318,128 @@ class CoordenadorController {
         </div>
       ` : '';
 
-      return '<div class="coord-fechamento-card">'
-        + '<div class="fechamento-card-header">'
-        + '<div>'
-        + '<div class="fechamento-turma-code">' + (turma ? turma.codigo : '—') + '</div>'
-        + '<div class="fechamento-turma-nome">' + (turma ? turma.nome.substring(0,55) : '—') + '</div>'
-        + '<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Solicitado por <strong>'
-        + (docente ? docente.nome.split(' ').slice(0,2).join(' ') : '—')
-        + '</strong> em ' + (sol.data || '') + '</div>'
-        + '</div>'
-        + '<span class="coord-badge badge-aguardando">Aguardando Aprovação (100% Docente)</span>'
-        + '</div>'
-        + checklistHtml
-        + '<div class="fechamento-metricas">'
-        + '<div class="fechamento-metrica"><span class="metrica-val">' + totalAtivos + '</span><span class="metrica-label">Alunos Ativos</span></div>'
-        + '<div class="fechamento-metrica"><span class="metrica-val">' + mediaGeral + '</span><span class="metrica-label">Média Geral</span></div>'
-        + '<div class="fechamento-metrica"><span class="metrica-val">' + freqMedia + '%</span><span class="metrica-label">Freq. Média</span></div>'
-        + '<div class="fechamento-metrica' + (emRisco > 0 ? ' metrica-alerta' : '') + '"><span class="metrica-val">' + emRisco + '</span><span class="metrica-label">Em Risco</span></div>'
-        + '</div>'
-        + (sol.observacao ? '<div class="fechamento-obs">&#128221; <em>"' + sol.observacao + '"</em></div>' : '')
-        + '<div class="fechamento-actions">'
-        + '<button type="button" class="btn btn-outline btn-sm" onclick="window.coordenadorController.recusarFechamento(' + sol.id + ')">Devolver para Ajustes</button>'
-        + '<button type="button" class="btn btn-primary" onclick="window.coordenadorController.aprovarFechamento(' + sol.id + ')">'
-        + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'
-        + ' Autorizar Fechamento</button>'
-        + '</div></div>';
-    }).join('');
+      cardsHtml += `
+        <div class="coord-fechamento-card" style="margin-bottom:14px; border:1px solid ${isFechado ? '#bbf7d0' : '#e2e8f0'}; background:${isFechado ? '#fcfdfd' : '#ffffff'};">
+          <div class="fechamento-card-header">
+            <div>
+              <div class="fechamento-turma-code">${turma.codigo}</div>
+              <div class="fechamento-turma-nome">${turma.nome}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
+                Semestre: <strong>${turma.periodo || '2026/1'}</strong> &bull; Turno: <strong>${turma.turno || 'Diurno'}</strong>
+              </div>
+            </div>
+            ${statusBadge}
+          </div>
+          ${checklistHtml}
+          <div class="fechamento-metricas">
+            <div class="fechamento-metrica"><span class="metrica-val">${totalAtivos}</span><span class="metrica-label">Alunos Ativos</span></div>
+            <div class="fechamento-metrica"><span class="metrica-val">${mediaGeral}</span><span class="metrica-label">Média Geral</span></div>
+            <div class="fechamento-metrica"><span class="metrica-val">${freqMedia}%</span><span class="metrica-label">Freq. Média</span></div>
+            <div class="fechamento-metrica ${emRisco > 0 ? 'metrica-alerta' : ''}"><span class="metrica-val">${emRisco}</span><span class="metrica-label">Em Risco</span></div>
+          </div>
+          ${(sol && sol.observacao) ? `<div class="fechamento-obs">💬 <em>"${sol.observacao}"</em></div>` : ''}
+          <div class="fechamento-actions">
+            ${actionButtons}
+          </div>
+        </div>
+      `;
+    });
+
+    el.innerHTML = cardsHtml;
+  }
+
+  // Fechamento direto efetuado pela Coordenação
+  fecharDiarioDireto(turmaId) {
+    const turmas = window.db.data.turmas || [];
+    const turma = turmas.find(t => t.id === Number(turmaId));
+    if (!turma) return;
+
+    turma.status = 'CONCLUIDA';
+    turma.diarioFechado = true;
+
+    // Atualiza ou insere solicitação como APROVADO
+    const solicitacoes = this._getSolicitacoes();
+    let sol = solicitacoes.find(s => s.turmaId === Number(turmaId));
+    if (sol) {
+      sol.status = 'APROVADO';
+      sol.dataAprovacao = new Date().toLocaleDateString('pt-BR');
+    } else {
+      sol = {
+        id: Date.now(),
+        turmaId: Number(turmaId),
+        docenteId: turma.docenteId || 1,
+        status: 'APROVADO',
+        data: new Date().toLocaleDateString('pt-BR'),
+        dataAprovacao: new Date().toLocaleDateString('pt-BR'),
+        observacao: 'Fechamento oficial realizado pela Coordenação Pedagógica.'
+      };
+      solicitacoes.push(sol);
+    }
+    window.db.data.solicitacoesFechamento = solicitacoes;
+
+    // Marca etapas docentes como concluídas
+    if (turma.professoresResponsaveis && Array.isArray(turma.professoresResponsaveis)) {
+      turma.professoresResponsaveis.forEach(p => { p.fechado = true; });
+    }
+
+    this._persist();
+
+    if (window.db && typeof window.db.adicionarNotificacao === 'function') {
+      window.db.adicionarNotificacao(
+        'APROVACAO',
+        `Diário Fechado • ${turma.codigo}`,
+        `A coordenação oficializou o fechamento do diário de classe da turma ${turma.codigo}. As edições docentes foram bloqueadas.`,
+        'Coordenação Pedagógica'
+      );
+    }
+
+    window.app.mostrarToast(`Diário da turma ${turma.codigo} fechado e homologado com sucesso! Edições bloqueadas.`, 'success');
+    this.renderDashboard();
+    this.renderListaTurmas();
+    this.renderVisaoCurricular();
+    this.renderPainelFechamento();
+  }
+
+  // Reabertura do diário para ajustes docentes
+  reabrirDiario(turmaId) {
+    const turmas = window.db.data.turmas || [];
+    const turma = turmas.find(t => t.id === Number(turmaId));
+    if (!turma) return;
+
+    turma.status = 'EM_ANDAMENTO';
+    turma.diarioFechado = false;
+
+    // Reabre solicitação
+    const solicitacoes = this._getSolicitacoes();
+    const sol = solicitacoes.find(s => s.turmaId === Number(turmaId));
+    if (sol) {
+      sol.status = 'DEVOLVIDO';
+      sol.motivoDevolucao = 'Diário reaberto pela coordenação para novos lançamentos e correções docentes.';
+      sol.dataDevolucao = new Date().toLocaleDateString('pt-BR');
+    }
+    window.db.data.solicitacoesFechamento = solicitacoes;
+
+    // Reabre etapas docentes
+    if (turma.professoresResponsaveis && Array.isArray(turma.professoresResponsaveis)) {
+      turma.professoresResponsaveis.forEach(p => { p.fechado = false; });
+    }
+
+    this._persist();
+
+    if (window.db && typeof window.db.adicionarNotificacao === 'function') {
+      window.db.adicionarNotificacao(
+        'DEVOLUCAO',
+        `Diário Reaberto • ${turma.codigo}`,
+        `A coordenação reabriu o diário de classe da turma ${turma.codigo}. Edições de frequências, notas e conteúdos estão liberadas.`,
+        'Coordenação Pedagógica'
+      );
+    }
+
+    window.app.mostrarToast(`Diário da turma ${turma.codigo} reaberto com sucesso! Edições liberadas para os professores.`, 'info');
+    this.renderDashboard();
+    this.renderListaTurmas();
+    this.renderVisaoCurricular();
+    this.renderPainelFechamento();
   }
 
   // ─── CRIAR NOVA TURMA ────────────────────────────────────────────────────────
@@ -406,14 +537,14 @@ class CoordenadorController {
       this._persist();
     }
 
-    // Notifica atualização global de turmas para Coordenação, Professor e Orientadoras
+    // Notifica atualização global de turmas para Coordenação, Professor e Orientadores
     if (typeof window.dispatchEvent === 'function') {
       try {
         window.dispatchEvent(new CustomEvent('turmas-atualizadas', { detail: { turma: novaTurma } }));
       } catch (e) {}
     }
 
-    // Se o controller da coordenação, orientadoras ou professor tiver seletores ativos, atualiza-os
+    // Se o controller da coordenação, orientadores ou professor tiver seletores ativos, atualiza-os
     if (window.portalOrientadorController && typeof window.portalOrientadorController.carregarTurmas === 'function') {
       try { window.portalOrientadorController.carregarTurmas(); } catch (e) {}
     }
@@ -994,8 +1125,504 @@ class CoordenadorController {
     }
   }
 
+  // ─── GESTÃO COMPLETA DE PTD DA UC (VISUALIZAR / EDITAR) ─────────────────────
+  abrirModalGerenciarPTD(cursoId = null, ucId = null) {
+    const cursos = window.db.data.cursos || [];
+    if (!cursos.length) {
+      window.app.mostrarToast('Nenhum curso cadastrado para gerenciar PTD.', 'warning');
+      return;
+    }
+
+    const modal = document.getElementById('modalCoordenadorPTD');
+    if (!modal) return;
+
+    const selectCurso = document.getElementById('ptdModalCursoSelect');
+    if (selectCurso) {
+      selectCurso.innerHTML = cursos.map(c => `<option value="${c.id}">${c.codigo} - ${c.nome}</option>`).join('');
+      if (cursoId) selectCurso.value = cursoId;
+    }
+
+    const cId = Number(selectCurso ? selectCurso.value : cursos[0].id);
+    this.onPtdModalCursoChange(cId, ucId);
+
+    window.app.abrirModal('modalCoordenadorPTD');
+  }
+
+  onPtdModalCursoChange(cursoId, ucIdPreselecionada = null) {
+    const ucs = (window.db.data.unidadesCurriculares || []).filter(u => u.cursoId === Number(cursoId));
+    const selectUc = document.getElementById('ptdModalUcSelect');
+    if (!selectUc) return;
+
+    if (!ucs.length) {
+      selectUc.innerHTML = '<option value="">Nenhuma UC cadastrada neste curso</option>';
+      document.getElementById('ptdTopicosContainer').innerHTML = '<p style="color:#64748b;font-size:12px;">Nenhuma disciplina disponível.</p>';
+      return;
+    }
+
+    selectUc.innerHTML = ucs.map(u => `<option value="${u.id}">${u.codigo} - ${u.nome}</option>`).join('');
+    if (ucIdPreselecionada && ucs.some(u => u.id === Number(ucIdPreselecionada))) {
+      selectUc.value = ucIdPreselecionada;
+    }
+    this.carregarDadosPtdUc(selectUc.value);
+  }
+
+  onPtdModalUcChange(ucId) {
+    this.carregarDadosPtdUc(ucId);
+  }
+
+  carregarDadosPtdUc(ucId) {
+    const ucs = window.db.data.unidadesCurriculares || [];
+    const uc = ucs.find(u => u.id === Number(ucId));
+    if (!uc) return;
+
+    const chInput = document.getElementById('ptdModalCargaHoraria');
+    const docInput = document.getElementById('ptdModalDocenteTitular');
+    const compTextarea = document.getElementById('ptdModalCompetencias');
+    const container = document.getElementById('ptdTopicosContainer');
+
+    if (chInput) chInput.value = uc.cargaHoraria || 80;
+
+    const titular = (window.db.data.usuarios || []).find(u => u.id === uc.docenteTitularId);
+    if (docInput) docInput.value = titular ? titular.nome : (uc.docenteTitularNome || 'Nathan Santana Matos');
+
+    if (compTextarea) {
+      compTextarea.value = uc.competencias || 'Desenvolver sistemas e interfaces responsivas com foco em usabilidade, semântica web, arquitetura em camadas e padrões industriais SENAI.';
+    }
+
+    // Tópicos programados (conteúdos das aulas)
+    let topicos = uc.conteudosProgramados;
+    if (!topicos || !Array.isArray(topicos) || topicos.length === 0) {
+      topicos = [
+        { tema: 'Aula 1: Introdução aos Elementos Semânticos', conteudo: 'Introdução aos elementos semânticos do HTML (header, nav, main, section, article, aside e footer).' },
+        { tema: 'Aula 2: Layouts Modernos com Flexbox e Grid', conteudo: 'Estilização moderna com CSS Flexbox, Grid Layout e propriedades de alinhamento responsivo.' },
+        { tema: 'Aula 3: Fundamentos de JavaScript e DOM', conteudo: 'Conceitos fundamentais de JavaScript: variáveis, funções, eventos e manipulação direta da árvore DOM.' },
+        { tema: 'Aula 4: Persistência Local e Acessibilidade Web', conteudo: 'Implementação de armazenamento local com localStorage, acessibilidade WCAG e conformidade com VLibras.' }
+      ];
+    }
+
+    container.innerHTML = '';
+    topicos.forEach(t => {
+      this.adicionarTopicoPtdLinha(t.tema, t.conteudo);
+    });
+  }
+
+  adicionarTopicoPtdLinha(tema = '', conteudo = '') {
+    const container = document.getElementById('ptdTopicosContainer');
+    if (!container) return;
+
+    const row = document.createElement('div');
+    row.className = 'ptd-topico-row';
+    row.style.cssText = 'background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:6px;';
+    row.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <input type="text" class="ptd-topico-tema filter-select" style="flex:1; font-size:12.5px; font-weight:700;" placeholder="Título / Tema da Aula (ex: Aula 1: Introdução)" value="${tema ? tema.replace(/"/g, '&quot;') : ''}">
+        <button type="button" class="btn btn-outline btn-sm" onclick="this.closest('.ptd-topico-row').remove()" style="color:#ef4444; border-color:#fecaca; font-size:11px; padding:2px 8px;" title="Remover conteúdo">&times;</button>
+      </div>
+      <textarea class="ptd-topico-conteudo filter-select" rows="2" style="width:100%; font-size:12px; resize:vertical;" placeholder="Descrição detalhada do conteúdo ministrado previsto no PTD...">${conteudo || ''}</textarea>
+    `;
+    container.appendChild(row);
+  }
+
+  salvarPtdUcAtual() {
+    const selectUc = document.getElementById('ptdModalUcSelect');
+    if (!selectUc || !selectUc.value) {
+      window.app.mostrarToast('Selecione uma Unidade Curricular.', 'warning');
+      return;
+    }
+
+    const ucId = Number(selectUc.value);
+    const ucs = window.db.data.unidadesCurriculares || [];
+    const uc = ucs.find(u => u.id === ucId);
+    if (!uc) return;
+
+    const ch = Number(document.getElementById('ptdModalCargaHoraria')?.value || 80);
+    const docNome = document.getElementById('ptdModalDocenteTitular')?.value || '';
+    const comp = document.getElementById('ptdModalCompetencias')?.value || '';
+
+    const rows = document.querySelectorAll('#ptdTopicosContainer .ptd-topico-row');
+    const novosTopicos = [];
+    rows.forEach(r => {
+      const tema = (r.querySelector('.ptd-topico-tema')?.value || '').trim();
+      const conteudo = (r.querySelector('.ptd-topico-conteudo')?.value || '').trim();
+      if (tema || conteudo) {
+        novosTopicos.push({ tema: tema || 'Aula de Conteúdo', conteudo: conteudo || tema });
+      }
+    });
+
+    uc.cargaHoraria = ch;
+    uc.docenteTitularNome = docNome;
+    uc.competencias = comp;
+    uc.conteudosProgramados = novosTopicos;
+
+    // Sincroniza em window.db.data.ptds
+    if (!window.db.data.ptds) window.db.data.ptds = [];
+    const idxPtd = window.db.data.ptds.findIndex(p => p.ucId === ucId);
+    const ptdObj = {
+      ucId: ucId,
+      ucCodigo: uc.codigo,
+      ucNome: uc.nome,
+      cargaHoraria: ch,
+      competencias: comp,
+      conteudosProgramados: novosTopicos,
+      atualizadoEm: new Date().toISOString()
+    };
+    if (idxPtd >= 0) {
+      window.db.data.ptds[idxPtd] = ptdObj;
+    } else {
+      window.db.data.ptds.push(ptdObj);
+    }
+
+    this._persist();
+
+    // Se o Diário do Professor estiver aberto, atualiza o seletor de PTD
+    if (window.diarioController && typeof window.diarioController.popularSelectPtd === 'function') {
+      window.diarioController.popularSelectPtd();
+    }
+
+    window.app.fecharModal('modalCoordenadorPTD');
+    window.app.mostrarToast('Conteúdos do Plano de Trabalho Docente salvos e integrados ao Diário!', 'success');
+    this.renderVisaoCurricular();
+  }
+
+  exportarPtdUcAtual() {
+    const selectUc = document.getElementById('ptdModalUcSelect');
+    const selectCurso = document.getElementById('ptdModalCursoSelect');
+    if (!selectUc || !selectUc.value) {
+      window.app.mostrarToast('Selecione uma UC para exportar.', 'warning');
+      return;
+    }
+    const ucId = Number(selectUc.value);
+    const cursoId = Number(selectCurso ? selectCurso.value : 1);
+
+    const uc = (window.db.data.unidadesCurriculares || []).find(u => u.id === ucId);
+    const curso = (window.db.data.cursos || []).find(c => c.id === cursoId);
+    const turmas = (window.db.data.turmas || []).filter(t => t.cursoId === cursoId);
+    const turma = turmas.length > 0 ? turmas[0] : null;
+
+    const topicos = (uc && uc.conteudosProgramados && uc.conteudosProgramados.length > 0)
+      ? uc.conteudosProgramados
+      : [
+          { tema: 'Aula 1: Introdução aos Elementos Semânticos', conteudo: 'Introdução aos elementos semânticos do HTML (header, nav, main, section, article, aside e footer).' },
+          { tema: 'Aula 2: Layouts Modernos com Flexbox e Grid', conteudo: 'Estilização moderna com CSS Flexbox, Grid Layout e propriedades de alinhamento responsivo.' }
+        ];
+
+    const cronogramaAulas = topicos.map((top, idx) => ({
+      id: idx + 1,
+      turmaId: turma ? turma.id : 1,
+      unidadeCurricularId: ucId,
+      data: `2026-0${Math.min(idx + 2, 6)}-15`,
+      tema: top.tema,
+      conteudo: top.conteudo,
+      horas: 4,
+      status: idx === 0 ? 'REALIZADA' : 'PREVISTA'
+    }));
+
+    const payload = {
+      tipo: 'SENAI_PTD_OFICIAL',
+      versao: '2.0',
+      dataExportacao: new Date().toISOString(),
+      escola: 'Escola SENAI Roberto Simonsen',
+      turma: turma || { id: 1, codigo: '1-2026.205 BA', nome: curso ? curso.nome : 'Técnico em Desenvolvimento de Sistemas' },
+      curso: curso || { id: 1, nome: 'Técnico em Desenvolvimento de Sistemas', codigo: 'TDS-2026' },
+      unidadeCurricular: uc,
+      cronogramaAulas: cronogramaAulas,
+      planosTrabalhoDocente: [
+        {
+          ucCodigo: uc ? uc.codigo : 'FRONT',
+          ucNome: uc ? uc.nome : 'Programação Front-end',
+          cargaHoraria: uc ? uc.cargaHoraria : 80,
+          competenciasGerais: uc ? uc.competencias : 'Desenvolver sistemas e interfaces atendendo padrões industriais.',
+          topicosProgramados: topicos,
+          metodologia: 'Metodologia SENAI de Educação Profissional com aprendizagem baseada em desafios industriais.',
+          criteriosAvaliacao: 'Critérios formativos contínuos, projetos práticos e frequência mínima de 75%.'
+        }
+      ]
+    };
+
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(payload, null, 2));
+    const downloadAnchor = document.createElement('a');
+    const codigoUc = uc ? uc.codigo.replace(/[^a-zA-Z0-9_-]/g, '_') : 'UC';
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `PTD_${codigoUc}_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+
+    window.app.mostrarToast(`PTD da disciplina ${uc ? uc.nome : ''} exportado com sucesso!`, 'success');
+  }
+
+  // ─── CARREGAR TURMA (ARQUIVO / MODELO PRÉ-CONFIGURADO) ─────────────────────
+  abrirModalCarregarTurma() {
+    this._dadosCarregamentoTurma = null;
+    const preview = document.getElementById('previewArquivoCarregarTurma');
+    if (preview) {
+      preview.style.display = 'none';
+      preview.innerHTML = '';
+    }
+    const input = document.getElementById('inputArquivoCarregarTurma');
+    if (input) input.value = '';
+    this.alternarAbaCarregarTurma('arquivo');
+    window.app.abrirModal('modalCoordenadorCarregarTurma');
+  }
+
+  alternarAbaCarregarTurma(aba) {
+    const btnArq = document.getElementById('btnAbaCarregarArquivo');
+    const btnMod = document.getElementById('btnAbaCarregarModelo');
+    const painelArq = document.getElementById('painelCarregarArquivo');
+    const painelMod = document.getElementById('painelCarregarModelo');
+
+    if (aba === 'arquivo') {
+      if (btnArq) btnArq.classList.add('active');
+      if (btnMod) btnMod.classList.remove('active');
+      if (painelArq) painelArq.style.display = 'block';
+      if (painelMod) painelMod.style.display = 'none';
+      this._modoCarregarTurma = 'arquivo';
+    } else {
+      if (btnArq) btnArq.classList.remove('active');
+      if (btnMod) btnMod.classList.add('active');
+      if (painelArq) painelArq.style.display = 'none';
+      if (painelMod) painelMod.style.display = 'block';
+      this._modoCarregarTurma = 'modelo';
+    }
+  }
+
+  onArquivoTurmaSelecionado(input) {
+    const file = input.files && input.files[0];
+    const preview = document.getElementById('previewArquivoCarregarTurma');
+    if (!file) return;
+
+    const self = this;
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      try {
+        const conteudo = e.target.result;
+        if (file.name.endsWith('.json')) {
+          const parsed = JSON.parse(conteudo);
+          self._dadosCarregamentoTurma = parsed;
+          if (preview) {
+            preview.style.display = 'block';
+            preview.innerHTML = `
+              <strong>✓ Arquivo JSON Válido:</strong> ${file.name} (${(file.size/1024).toFixed(1)} KB)<br>
+              <strong>Turma detectada:</strong> ${parsed.turma ? (parsed.turma.codigo || parsed.turma.nome) : (parsed.nome || 'Turma Externa')}<br>
+              <strong>Itens identificados:</strong> ${(parsed.alunos ? parsed.alunos.length : 0)} alunos, ${(parsed.cronogramaAulas ? parsed.cronogramaAulas.length : 0)} aulas no cronograma.
+            `;
+          }
+        } else if (file.name.endsWith('.csv')) {
+          const linhas = conteudo.split(/\r?\n/).filter(l => l.trim().length > 0);
+          self._dadosCarregamentoTurma = { tipo: 'CSV', linhas: linhas, nomeArquivo: file.name };
+          if (preview) {
+            preview.style.display = 'block';
+            preview.innerHTML = `
+              <strong>✓ Arquivo CSV Reconhecido:</strong> ${file.name}<br>
+              <strong>Total de linhas:</strong> ${linhas.length} registros encontrados para processamento.
+            `;
+          }
+        }
+        window.app.mostrarToast('Arquivo lido com sucesso. Clique em Carregar e Salvar Turma para confirmar.', 'info');
+      } catch (err) {
+        console.error('Erro ao ler arquivo da turma:', err);
+        if (preview) {
+          preview.style.display = 'block';
+          preview.innerHTML = `<span style="color:#ef4444;">Erro ao processar arquivo: ${err.message}</span>`;
+        }
+      }
+    };
+
+    reader.readAsText(file);
+  }
+
+  executarCarregamentoTurma() {
+    if (!window.db) return;
+
+    let novaTurma = null;
+    let novosAlunos = [];
+
+    if (this._modoCarregarTurma === 'modelo') {
+      const modelo = document.getElementById('selectModeloPreconfigurado')?.value || 'IOT_2026';
+      
+      if (modelo === 'IOT_2026') {
+        novaTurma = {
+          id: Date.now(),
+          codigo: '1-2026.310 IOT',
+          nome: 'Técnico em Internet das Coisas (IoT) - Termo 1A',
+          cursoId: 1,
+          cursoNome: 'Técnico em Internet das Coisas',
+          turno: 'Tarde',
+          periodo: '2026/1',
+          totalAlunos: 10,
+          vagas: 32,
+          status: 'EM_ANDAMENTO',
+          docenteId: 1,
+          professoresResponsaveis: [
+            { id: 1, nome: 'Nathan Santana Matos', papel: 'Professor Titular', fechado: false }
+          ]
+        };
+      } else if (modelo === 'AUTO_2026') {
+        novaTurma = {
+          id: Date.now(),
+          codigo: '1-2026.402 AUT',
+          nome: 'Técnico em Automação Industrial - Termo 2A',
+          cursoId: 2,
+          cursoNome: 'Técnico em Automação Industrial',
+          turno: 'Manhã',
+          periodo: '2026/1',
+          totalAlunos: 10,
+          vagas: 30,
+          status: 'EM_ANDAMENTO',
+          docenteId: 1,
+          professoresResponsaveis: [
+            { id: 1, nome: 'Nathan Santana Matos', papel: 'Professor Titular', fechado: false }
+          ]
+        };
+      } else {
+        novaTurma = {
+          id: Date.now(),
+          codigo: `1-2026.${Math.floor(100 + Math.random() * 899)} ELE`,
+          nome: 'Técnico em Eletroeletrônica - Matriz SENAI',
+          cursoId: 1,
+          cursoNome: 'Técnico em Eletroeletrônica',
+          turno: 'Noite',
+          periodo: '2026/1',
+          totalAlunos: 10,
+          vagas: 35,
+          status: 'EM_ANDAMENTO',
+          docenteId: 1,
+          professoresResponsaveis: [
+            { id: 1, nome: 'Nathan Santana Matos', papel: 'Professor Titular', fechado: false }
+          ]
+        };
+      }
+
+      const nomesExemplo = [
+        'Arthur Gabriel Ribeiro', 'Beatriz Lima Vasconcelos', 'Caio Henrique Ferreira',
+        'Daniela Souza Nogueira', 'Eduardo Martins Prado', 'Fernanda Castro Ramos',
+        'Guilherme Torres Pires', 'Helena Moraes Duarte', 'Igor Silveira Fontes', 'Juliana Rocha Neves'
+      ];
+
+      novosAlunos = nomesExemplo.map((nome, idx) => ({
+        id: Date.now() + idx + 1,
+        turmaId: novaTurma.id,
+        nome: nome,
+        matricula: `RA-${2026000 + Math.floor(Math.random() * 9000)}`,
+        statusMatricula: 'ATIVO',
+        numeroChamada: idx + 1,
+        foto: null
+      }));
+
+    } else {
+      // Modo Arquivo (.json ou .csv)
+      if (!this._dadosCarregamentoTurma) {
+        window.app.mostrarToast('Por favor, selecione um arquivo JSON ou CSV antes de carregar.', 'warning');
+        return;
+      }
+
+      const dados = this._dadosCarregamentoTurma;
+      if (dados.tipo === 'CSV') {
+        const cod = `CSV-${new Date().getFullYear()}.${Math.floor(100 + Math.random() * 899)}`;
+        novaTurma = {
+          id: Date.now(),
+          codigo: cod,
+          nome: `Turma Importada via CSV (${dados.nomeArquivo})`,
+          cursoId: 1,
+          cursoNome: 'Curso Técnico Importado',
+          turno: 'Diurno',
+          periodo: '2026/1',
+          totalAlunos: Math.max(dados.linhas.length - 1, 1),
+          vagas: 40,
+          status: 'EM_ANDAMENTO',
+          docenteId: 1,
+          professoresResponsaveis: [{ id: 1, nome: 'Nathan Santana Matos', papel: 'Professor Titular', fechado: false }]
+        };
+
+        // Linhas subsequentes como alunos
+        novosAlunos = dados.linhas.slice(1).map((linha, idx) => {
+          const colunas = linha.split(';').length > 1 ? linha.split(';') : linha.split(',');
+          const nomeAluno = colunas[0] ? colunas[0].trim().replace(/"/g, '') : `Estudante ${idx+1}`;
+          return {
+            id: Date.now() + idx + 1,
+            turmaId: novaTurma.id,
+            nome: nomeAluno,
+            matricula: `RA-${2026100 + idx}`,
+            statusMatricula: 'ATIVO',
+            numeroChamada: idx + 1,
+            foto: null
+          };
+        });
+
+      } else {
+        // Objeto JSON
+        const tInfo = dados.turma || {};
+        novaTurma = {
+          id: Date.now(),
+          codigo: tInfo.codigo || `IMP-${Math.floor(100 + Math.random() * 899)}`,
+          nome: tInfo.nome || dados.nome || 'Turma Importada JSON',
+          cursoId: dados.curso ? (dados.curso.id || 1) : 1,
+          cursoNome: dados.curso ? (dados.curso.nome || 'Técnico Especializado') : 'Técnico Especializado',
+          turno: tInfo.turno || 'Manhã',
+          periodo: tInfo.periodo || '2026/1',
+          totalAlunos: Array.isArray(dados.alunos) ? dados.alunos.length : 12,
+          vagas: 35,
+          status: 'EM_ANDAMENTO',
+          docenteId: 1,
+          professoresResponsaveis: [{ id: 1, nome: 'Nathan Santana Matos', papel: 'Professor Titular', fechado: false }]
+        };
+
+        if (Array.isArray(dados.alunos) && dados.alunos.length > 0) {
+          novosAlunos = dados.alunos.map((a, idx) => ({
+            id: Date.now() + idx + 1,
+            turmaId: novaTurma.id,
+            nome: a.nome || `Aluno ${idx+1}`,
+            matricula: a.matricula || `RA-${2026200 + idx}`,
+            statusMatricula: 'ATIVO',
+            numeroChamada: idx + 1,
+            foto: null
+          }));
+        } else {
+          novosAlunos = [
+            { id: Date.now() + 1, turmaId: novaTurma.id, nome: 'Aluno Exemplo Importado A', matricula: 'RA-2026881', statusMatricula: 'ATIVO', numeroChamada: 1 },
+            { id: Date.now() + 2, turmaId: novaTurma.id, nome: 'Aluno Exemplo Importado B', matricula: 'RA-2026882', statusMatricula: 'ATIVO', numeroChamada: 2 }
+          ];
+        }
+      }
+    }
+
+    // Salva no banco de dados
+    if (!window.db.data.turmas) window.db.data.turmas = [];
+    window.db.data.turmas.push(novaTurma);
+
+    if (!window.db.data.alunos) window.db.data.alunos = [];
+    novosAlunos.forEach(al => window.db.data.alunos.push(al));
+
+    // Atribuição inicial
+    const atribs = this._getAtribuicoes();
+    atribs.push({
+      id: Date.now(),
+      turmaId: novaTurma.id,
+      docenteId: 1,
+      unidadeCurricularId: 1,
+      ano: 2026
+    });
+    window.db.data.atribuicoes = atribs;
+
+    this._persist();
+
+    window.app.fecharModal('modalCoordenadorCarregarTurma');
+    window.app.mostrarToast(`Turma ${novaTurma.codigo} carregada e cadastrada com sucesso!`, 'success');
+
+    this.renderDashboard();
+    this.renderListaTurmas();
+    this.renderVisaoCurricular();
+    this.renderPainelFechamento();
+
+    // Atualiza seletores no portal do professor e orientação
+    if (window.app && typeof window.app.popularSelectTurmasGlobal === 'function') {
+      window.app.popularSelectTurmasGlobal();
+    }
+  }
+
   _bindEvents() {
-    var ids = ['modalCoordenadorNovaTurma','modalAtribuirDocente','modalSolicitarFechamento'];
+    var ids = ['modalCoordenadorNovaTurma','modalCoordenadorCarregarTurma','modalCoordenadorPTD','modalAtribuirDocente','modalSolicitarFechamento'];
     ids.forEach(function(id) {
       var el = document.getElementById(id);
       if (el) {
@@ -1004,7 +1631,7 @@ class CoordenadorController {
         });
       }
     });
-    }
+  }
 }
 
 window.coordenadorController = new CoordenadorController();

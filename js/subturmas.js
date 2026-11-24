@@ -83,6 +83,7 @@ class SubturmasController {
     });
 
     this.cancelarSelecao();
+    this.atualizarSelectsSubturmaEmTodosPortais();
     window.app.mostrarToast('Subturmas configuradas com sucesso! Selecionados → A | Restantes → B', 'success');
   }
 
@@ -227,6 +228,7 @@ class SubturmasController {
     }
     window.db.transferirAlunoSubturma(alunoId, novaSubturma);
     this.renderizarSubturmas();
+    this.atualizarSelectsSubturmaEmTodosPortais();
     window.app.mostrarToast(`Aluno transferido para a Subturma ${novaSubturma}! Registros de chamadas históricas preservados.`, 'success');
   }
 
@@ -315,6 +317,7 @@ class SubturmasController {
       window.dispatchEvent(new CustomEvent('renova:db-updated'));
     }
 
+    this.atualizarSelectsSubturmaEmTodosPortais();
     window.app.mostrarToast(`Subturmas divididas! ${this.alunosSelecionados.size} alunos na Subturma ${letraAlvo} e ${todosAlunos.length - this.alunosSelecionados.size} na Subturma ${outraLetra}.`, 'success');
     this.renderizarSubturmaFigma();
     setTimeout(() => {
@@ -345,7 +348,42 @@ class SubturmasController {
     if (inputNome) inputNome.value = 'Subturma A';
 
     this.renderizarSubturmaFigma();
+    this.atualizarSelectsSubturmaEmTodosPortais();
     window.app.mostrarToast(`Divisão 50/50 aplicada! Metade na Subturma A e metade na Subturma B.`, 'success');
+  }
+
+  atualizarSelectsSubturmaEmTodosPortais() {
+    const turmaId = this.turmaId;
+    const alunos = window.db ? window.db.getAlunosPorTurma(turmaId, 'TODOS') : [];
+    const countA = alunos.filter(a => a.subturma === 'A').length;
+    const countB = alunos.filter(a => a.subturma === 'B').length;
+
+    const optHtml = `
+      <option value="TODAS">Turma Completa (${alunos.length} alunos)</option>
+      <option value="A">Subturma A (${countA} alunos)</option>
+      <option value="B">Subturma B (${countB} alunos)</option>
+    `;
+
+    ['selectDiarioSubturmaFigma', 'selectNotasSubturmaFigma', 'selectMediasSubturma', 'selectSubturmaRelatorioFigma'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        const valAnterior = el.value;
+        el.innerHTML = optHtml;
+        if (['TODAS', 'A', 'B'].includes(valAnterior)) {
+          el.value = valAnterior;
+        }
+      }
+    });
+
+    if (window.diarioController && typeof window.diarioController.carregarChamada === 'function') {
+      window.diarioController.carregarChamada();
+    }
+    if (window.notasController && typeof window.notasController.carregarAvaliacoes === 'function') {
+      window.notasController.carregarAvaliacoes();
+    }
+    if (window.notasController && typeof window.notasController.renderizarMedias === 'function') {
+      window.notasController.renderizarMedias();
+    }
   }
 
 }

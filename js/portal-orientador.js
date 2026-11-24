@@ -143,7 +143,7 @@ class PortalOrientadorController {
   // =========================================================================
   renderRadar() {
     if (!window.db) return;
-    const radarData = window.db.getRadarOrientador(this.turmaId);
+    const radarData = window.db.getRadarOrientador('TODOS');
 
     // 1. Atualizar KPIs Operacionais
     const kpiFaltas = document.getElementById('radarKpiFaltas');
@@ -313,30 +313,30 @@ class PortalOrientadorController {
 
       if (this.calFiltroTipo === 'TODOS' || this.calFiltroTipo === 'ATENDIMENTOS') {
         atendsDia.slice(0, 2).forEach(at => {
-          chipsHtml += `<div class="cal-chip atendimento" title="Atendimento com ${at.alunoNome} (${at.horaInicio})">⏱️ ${at.horaInicio} ${at.alunoNome.split(' ')[0]}</div>`;
+          chipsHtml += `<div class="cal-chip atendimento" title="Atendimento com ${at.alunoNome} (${at.horaInicio})">${at.horaInicio} ${at.alunoNome.split(' ')[0]}</div>`;
         });
       }
 
       if (this.calFiltroTipo === 'TODOS' || this.calFiltroTipo === 'COMPENSACOES') {
         compsDia.slice(0, 2).forEach(cp => {
-          chipsHtml += `<div class="cal-chip compensacao" title="Compensação: ${cp.alunoNome} (${cp.turno})">⚖️ ${cp.alunoNome.split(' ')[0]} (${cp.horasObrigacao}h)</div>`;
+          chipsHtml += `<div class="cal-chip compensacao" title="Compensação: ${cp.alunoNome} (${cp.turno})">${cp.alunoNome.split(' ')[0]} (${cp.horasObrigacao}h)</div>`;
         });
       }
 
       if (this.calFiltroTipo === 'TODOS' || this.calFiltroTipo === 'ATESTADOS') {
         justsDia.slice(0, 2).forEach(jt => {
-          chipsHtml += `<div class="cal-chip atestado" title="Afastamento: ${jt.alunoNome}">📋 ${jt.alunoNome.split(' ')[0]}</div>`;
+          chipsHtml += `<div class="cal-chip atestado" title="Afastamento: ${jt.alunoNome}">${jt.alunoNome.split(' ')[0]}</div>`;
         });
       }
 
       if (this.calFiltroTipo === 'TODOS' || this.calFiltroTipo === 'AVALIACOES') {
         avalsDia.slice(0, 1).forEach(av => {
-          chipsHtml += `<div class="cal-chip avaliacao" title="Avaliação: ${av.titulo}">🎓 ${av.titulo.substring(0, 18)}...</div>`;
+          chipsHtml += `<div class="cal-chip avaliacao" title="Avaliação: ${av.titulo}">${av.titulo.substring(0, 18)}...</div>`;
         });
       }
 
       if (totalFaltasDia > 0) {
-        chipsHtml += `<div class="cal-chip falta" title="${totalFaltasDia} falta(s) registrada(s) nesta data">🔴 ${totalFaltasDia} falta(s)</div>`;
+        chipsHtml += `<div class="cal-chip falta" title="${totalFaltasDia} falta(s) registrada(s) nesta data">${totalFaltasDia} falta(s)</div>`;
       }
 
       cellsHtml += `
@@ -450,7 +450,7 @@ class PortalOrientadorController {
       html += `
         <div class="cal-side-event-item" style="border-left:3px solid #d97706;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <strong style="color:#92400e; font-size:11.5px;">⚖️ Compensação de Ausência</strong>
+            <strong style="color:#92400e; font-size:11.5px;">Compensação de Ausência</strong>
             <span class="badge" style="background:#fef3c7; color:#92400e; font-size:10px;">${cp.status}</span>
           </div>
           <div style="font-weight:700; color:#0f172a;">${cp.alunoNome} (${cp.horasObrigacao} horas)</div>
@@ -464,7 +464,7 @@ class PortalOrientadorController {
       html += `
         <div class="cal-side-event-item" style="border-left:3px solid #16a34a;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <strong style="color:#15803d; font-size:11.5px;">📋 Afastamento / Atestado</strong>
+            <strong style="color:#15803d; font-size:11.5px;">Afastamento / Atestado</strong>
             <span class="badge" style="background:#dcfce7; color:#15803d; font-size:10px;">${jt.status}</span>
           </div>
           <div style="font-weight:700; color:#0f172a;">${jt.alunoNome}</div>
@@ -478,11 +478,11 @@ class PortalOrientadorController {
       html += `
         <div class="cal-side-event-item" style="border-left:3px solid #9333ea; background:#faf5ff;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <strong style="color:#6b21a8; font-size:11.5px;">🎓 Avaliação Docente da Turma</strong>
+            <strong style="color:#6b21a8; font-size:11.5px;">Avaliação Docente da Turma</strong>
             <span class="badge" style="background:#f3e8ff; color:#6b21a8; font-size:10px;">Peso ${av.peso}</span>
           </div>
           <div style="font-weight:700; color:#0f172a;">${av.titulo}</div>
-          <div style="color:#475569; font-size:11.5px; margin-top:2px;">⚠️ Alunos em prova nesta data: evitar choques de agenda.</div>
+          <div style="color:#475569; font-size:11.5px; margin-top:2px;">Alunos em prova nesta data: evitar choques de agenda.</div>
         </div>
       `;
     });
@@ -500,7 +500,7 @@ class PortalOrientadorController {
     const filtroStatus = (document.getElementById('filtroStatusAtestado') || {}).value || '';
     if (!tbody) return;
 
-    let lista = window.db.getJustificativas(this.turmaId);
+    let lista = (window.db.getJustificativas && window.db.getJustificativas(null)) || (window.db.data && window.db.data.justificativas) || [];
     if (filtroStatus) {
       lista = lista.filter(j => j.status === filtroStatus);
     }
@@ -520,15 +520,15 @@ class PortalOrientadorController {
       if (j.status === 'ABONADA') {
         badgeBg = '#dcfce7';
         badgeColor = '#15803d';
-        statusLabel = '✓ Abonada (Oficial)';
+        statusLabel = 'Abonada (Oficial)';
       } else if (j.status === 'A_COMPENSAR') {
         badgeBg = '#e0e7ff';
         badgeColor = '#3730a3';
-        statusLabel = '⚖️ A Compensar';
+        statusLabel = 'A Compensar';
       } else if (j.status === 'INJUSTIFICADA') {
         badgeBg = '#fee2e2';
         badgeColor = '#991b1b';
-        statusLabel = '✕ Injustificada';
+        statusLabel = 'Injustificada';
       }
 
       const periodoStr = (j.dataInicio === j.dataFim) ? j.dataInicio : `${j.dataInicio} até ${j.dataFim}`;
@@ -540,7 +540,7 @@ class PortalOrientadorController {
             <span style="font-size:11px; color:#64748b;">Cadastrado por: ${j.cadastradoPor || 'Aluno'}</span>
           </td>
           <td><span class="badge" style="background:#f1f5f9; color:#334155; font-size:11px; padding:3px 6px;">${j.tipo}</span></td>
-          <td>📅 ${periodoStr}</td>
+          <td>${periodoStr}</td>
           <td style="max-width:240px; font-size:12px; color:#475569;">
             <div>${j.motivo}</div>
             ${j.parecer ? `<div style="font-size:11px; color:#0284c7; margin-top:3px;"><strong>Parecer:</strong> ${j.parecer}</div>` : ''}
@@ -551,21 +551,22 @@ class PortalOrientadorController {
             </span>
           </td>
           <td>
-            <a href="javascript:void(0)" onclick="window.app.mostrarToast('Visualizando documento anexo: ' + '${j.documento}', 'info')" style="color:#0284c7; font-size:12px; font-weight:600; text-decoration:underline;">
-              📎 ${j.documento || 'Anexo'}
+            <a href="javascript:void(0)" onclick="window.portalOrientadorController.visualizarAtestadoPDF(${j.id})" style="color:#0284c7; font-size:12px; font-weight:600; text-decoration:underline; display:inline-flex; align-items:center; gap:4px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              <span>${j.documento || 'Comprovante.pdf'}</span>
             </a>
           </td>
           <td>
             <div style="display:flex; gap:6px; align-items:center;">
               ${j.status === 'PENDENTE' ? `
                 <button type="button" class="btn btn-sm" onclick="window.portalOrientadorController.homologarAtestado(${j.id}, 'ABONADA')" title="Homologar e Abonar Falta" style="background:#16a34a; color:#fff; border:none; padding:4px 8px; font-size:11px; border-radius:4px;">
-                  ✓ Abonar
+                  Abonar
                 </button>
                 <button type="button" class="btn btn-sm" onclick="window.portalOrientadorController.homologarAtestado(${j.id}, 'A_COMPENSAR')" title="Encaminhar para Compensação de Horas" style="background:#d97706; color:#fff; border:none; padding:4px 8px; font-size:11px; border-radius:4px;">
-                  ⚖️ Compensar
+                  Compensar
                 </button>
                 <button type="button" class="btn btn-sm" onclick="window.portalOrientadorController.homologarAtestado(${j.id}, 'INJUSTIFICADA')" title="Recusar como Injustificada" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; font-size:11px; border-radius:4px;">
-                  ✕ Recusar
+                  Recusar
                 </button>
               ` : `
                 <span style="font-size:11px; color:#64748b;">Homologado por ${j.homologadoPor ? j.homologadoPor.split(' ')[0] : 'Orientador'}</span>
@@ -575,6 +576,139 @@ class PortalOrientadorController {
         </tr>
       `;
     }).join('');
+  }
+
+  visualizarAtestadoPDF(justificativaId) {
+    if (!window.db) return;
+    const j = (window.db.data.justificativas || []).find(item => Number(item.id) === Number(justificativaId));
+    if (!j) {
+      if (window.app) window.app.mostrarToast('Atestado não encontrado.', 'error');
+      return;
+    }
+
+    const aluno = window.db.getAlunoById ? window.db.getAlunoById(j.alunoId) : null;
+    const turma = aluno && window.db.data.turmas ? window.db.data.turmas.find(t => t.id === aluno.turmaId) : null;
+    const turmaNome = turma ? `${turma.codigo} — ${turma.nome}` : 'Turma SENAI';
+
+    const modal = document.getElementById('pdfModal');
+    const iframe = document.getElementById('pdfModalIframe');
+    const title = document.getElementById('pdfModalTitle');
+    const btnDownload = document.getElementById('pdfModalDownload');
+    const btnClose = document.getElementById('pdfModalClose');
+
+    if (!modal || !iframe) {
+      window.open('', '_blank');
+      return;
+    }
+
+    if (title) title.textContent = `Atestado Médico — ${j.alunoNome || 'Estudante'}`;
+
+    const docHtml = `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8">
+        <title>Comprovante de Atestado Médico</title>
+        <style>
+          body { font-family: 'Montserrat', Arial, sans-serif; margin: 0; padding: 32px; background: #f8fafc; color: #0f172a; }
+          .cert-card { max-width: 680px; margin: 0 auto; background: #ffffff; border: 2px solid #cbd5e1; border-radius: 12px; padding: 36px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+          .cert-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 24px; }
+          .cert-badge { background: #fee2e2; color: #991b1b; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; }
+          .cert-title { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; }
+          .cert-sub { font-size: 13px; color: #64748b; margin: 0; }
+          .cert-section { margin-bottom: 20px; }
+          .cert-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; display: block; }
+          .cert-value { font-size: 14px; font-weight: 600; color: #1e293b; background: #f1f5f9; padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0; }
+          .cert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+          .cert-footer { margin-top: 32px; padding-top: 20px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: flex-end; }
+          .cert-seal { font-size: 11px; color: #0284c7; font-weight: 600; }
+        </style>
+      </head>
+      <body>
+        <div class="cert-card">
+          <div class="cert-header">
+            <div>
+              <h2 class="cert-title">ESCOLA SENAI ROBERTO SIMONSEN</h2>
+              <p class="cert-sub">Acompanhamento e Triagem da Orientação Educacional</p>
+            </div>
+            <span class="cert-badge">${j.status === 'ABONADA' ? 'Homologado' : (j.status === 'A_COMPENSAR' ? 'Compensação' : 'Em Análise')}</span>
+          </div>
+
+          <div class="cert-section">
+            <span class="cert-label">Estudante</span>
+            <div class="cert-value">${j.alunoNome || 'Estudante'} &bull; RA: ${aluno ? (aluno.ra || aluno.matriculaFuncional || 'RA2026052') : 'RA2026052'}</div>
+          </div>
+
+          <div class="cert-grid">
+            <div>
+              <span class="cert-label">Turma</span>
+              <div class="cert-value">${turmaNome}</div>
+            </div>
+            <div>
+              <span class="cert-label">Tipo de Afastamento</span>
+              <div class="cert-value">${j.tipo || 'Atestado Médico'}</div>
+            </div>
+          </div>
+
+          <div class="cert-grid">
+            <div>
+              <span class="cert-label">Data de Início</span>
+              <div class="cert-value">${j.dataInicio}</div>
+            </div>
+            <div>
+              <span class="cert-label">Data de Término</span>
+              <div class="cert-value">${j.dataFim}</div>
+            </div>
+          </div>
+
+          <div class="cert-section">
+            <span class="cert-label">Motivo Clínico / Justificativa</span>
+            <div class="cert-value" style="font-weight: 400; line-height: 1.5;">${j.motivo || 'Motivo de saúde informado pelo estudante com apresentação de atestado com CID comprobatório.'}</div>
+          </div>
+
+          ${j.parecer ? `
+            <div class="cert-section">
+              <span class="cert-label">Parecer da Orientação Educacional</span>
+              <div class="cert-value" style="background:#eff6ff; color:#0369a1; border-color:#bfdbfe; font-weight: 500;">${j.parecer}</div>
+            </div>
+          ` : ''}
+
+          <div class="cert-footer">
+            <div class="cert-seal">
+              <div>Autenticação Eletrônica: SENAI-SP-DOC-${j.id}-${Date.now().toString().slice(-6)}</div>
+              <div>Arquivo Anexo: <strong>${j.documento || 'atestado_digitalizado.pdf'}</strong></div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 11px; color: #64748b;">Homologação Institucional</div>
+              <div style="font-size: 13px; font-weight: 700; color: #0f172a;">Orientação Educacional</div>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+    iframe.src = blobUrl;
+
+    if (btnDownload) {
+      btnDownload.onclick = () => {
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `Atestado_${(j.alunoNome || 'aluno').replace(/\s+/g, '_')}_${j.dataInicio}.html`;
+        link.click();
+      };
+    }
+
+    if (btnClose) {
+      btnClose.onclick = () => {
+        iframe.src = '';
+        modal.classList.add('hidden');
+      };
+    }
+
+    modal.classList.remove('hidden');
   }
 
   homologarAtestado(id, novoStatus) {
@@ -608,7 +742,7 @@ class PortalOrientadorController {
     const filtroStatus = (document.getElementById('filtroStatusCompensacao') || {}).value || '';
     if (!tbody) return;
 
-    let lista = window.db.getCompensacoes(this.turmaId);
+    let lista = (window.db.getCompensacoes && window.db.getCompensacoes(null)) || (window.db.data && window.db.data.compensacoes) || [];
     if (filtroStatus) {
       lista = lista.filter(c => c.status === filtroStatus);
     }
@@ -631,19 +765,19 @@ class PortalOrientadorController {
           <td><span class="badge" style="background:#fef3c7; color:#92400e; font-weight:700; font-size:11.5px; padding:3px 8px; border-radius:4px;">${c.horasObrigacao} horas</span></td>
           <td style="font-size:12px; color:#475569;">${c.motivoOrigem}</td>
           <td style="font-size:12px;">
-            <div>📅 <strong>${c.dataAgendada || c.dataLimite}</strong></div>
+            <div><strong>${c.dataAgendada || c.dataLimite}</strong></div>
             <span style="font-size:11px; color:#64748b;">Turno: ${c.turno || 'Contraturno'}</span>
           </td>
           <td style="max-width:240px; font-size:12px; color:#334155;">${c.atividadeDescricao}</td>
           <td>
             <span class="badge" style="background:${isCumprido ? '#dcfce7' : '#fef3c7'}; color:${isCumprido ? '#15803d' : '#92400e'}; font-weight:700; font-size:11px; padding:4px 8px; border-radius:6px;">
-              ${isCumprido ? '✓ Cumprido' : (c.status === 'AGENDADA' ? '📅 Agendada' : '⏳ Pendente')}
+              ${isCumprido ? 'Cumprido' : (c.status === 'AGENDADA' ? 'Agendada' : 'Pendente')}
             </span>
           </td>
           <td>
             ${!isCumprido ? `
               <button type="button" class="btn btn-sm btn-primary" onclick="window.portalOrientadorController.darBaixaCompensacao(${c.id})" style="font-size:11px; padding:4px 10px; background:#16a34a; border-color:#16a34a;">
-                ✓ Dar Baixa
+                Dar Baixa
               </button>
             ` : `
               <span style="font-size:11.5px; color:#16a34a; font-weight:600;">Cumprida em ${c.dataCumprimento || ''}</span>
@@ -673,12 +807,14 @@ class PortalOrientadorController {
     const inputBusca = (document.getElementById('inputBuscaCarometro') || {}).value || '';
     if (!grid) return;
 
-    const alunos = window.db.getAlunosPorTurma(this.turmaId, 'TODOS')
+    const alunos = (window.db.data.alunos || [])
       .filter(a => a.statusMatricula === 'ATIVO');
 
-    const sintese = window.db.getSinteseConsolidada(this.turmaId);
     const sinteseMap = new Map();
-    (sintese.alunos || []).forEach(item => sinteseMap.set(item.aluno.id, item));
+    (window.db.data.turmas || []).forEach(t => {
+      const s = (window.db.getSinteseConsolidada && window.db.getSinteseConsolidada(t.id)) || { alunos: [] };
+      ((s && s.alunos) || []).forEach(item => sinteseMap.set(item.aluno.id, item));
+    });
 
     const contatosHoje = window.db.getContatosHoje();
     const mapContatosHoje = new Map();
@@ -710,9 +846,9 @@ class PortalOrientadorController {
       return `
         <div class="carometro-card" style="position:relative; cursor:pointer;" onclick="window.portalOrientadorController.abrirProntuario(${al.id})">
           <div style="position:absolute; top:12px; right:12px; display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
-            ${contatoFeito ? `<span class="badge" style="background:#dcfce7; color:#15803d; font-size:10px; padding:2px 6px;">📞 Contato Hoje</span>` : ''}
-            ${temAtestadoPendente ? `<span class="badge" style="background:#fef3c7; color:#92400e; font-size:10px; padding:2px 6px;">📝 Atestado Pendente</span>` : ''}
-            ${temCompAberta ? `<span class="badge" style="background:#f3e8ff; color:#6b21a8; font-size:10px; padding:2px 6px;">⚖️ Compensação</span>` : ''}
+            ${contatoFeito ? `<span class="badge" style="background:#dcfce7; color:#15803d; font-size:10px; padding:2px 6px;">Contato Hoje</span>` : ''}
+            ${temAtestadoPendente ? `<span class="badge" style="background:#fef3c7; color:#92400e; font-size:10px; padding:2px 6px;">Atestado Pendente</span>` : ''}
+            ${temCompAberta ? `<span class="badge" style="background:#f3e8ff; color:#6b21a8; font-size:10px; padding:2px 6px;">Compensação</span>` : ''}
             ${temFalta ? `<span class="badge" style="background:#fee2e2; color:#be123c; font-size:10px; padding:2px 6px;">${hist.faltas} Faltas</span>` : ''}
           </div>
 
@@ -809,7 +945,7 @@ class PortalOrientadorController {
               <div class="timeline-box-header">
                 <div>
                   <strong class="timeline-title">${item.titulo}</strong>
-                  <span style="font-size:11px; color:#64748b; margin-left:8px;">📅 ${item.data} ${item.hora && item.hora !== '—' ? 'às ' + item.hora : ''}</span>
+                  <span style="font-size:11px; color:#64748b; margin-left:8px;">${item.data} ${item.hora && item.hora !== '—' ? 'às ' + item.hora : ''}</span>
                 </div>
                 <span class="badge" style="background:${item.badgeColor}; color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px;">
                   ${item.badge}
@@ -817,7 +953,7 @@ class PortalOrientadorController {
               </div>
               <p class="timeline-desc">${item.descricao}</p>
               ${item.detalhes ? `<div style="font-size:11.5px; color:#334155; margin-top:4px;">${item.detalhes}</div>` : ''}
-              ${item.encaminhamento ? `<div style="font-size:11.5px; color:#be123c; font-weight:700; margin-top:4px;">⚠️ ${item.encaminhamento}</div>` : ''}
+              ${item.encaminhamento ? `<div style="font-size:11.5px; color:#be123c; font-weight:700; margin-top:4px;">${item.encaminhamento}</div>` : ''}
               <div style="font-size:11px; color:#94a3b8; margin-top:6px; text-align:right;">Registrado por: ${item.autor || 'Orientação'}</div>
             </div>
           </div>
@@ -833,11 +969,14 @@ class PortalOrientadorController {
     const modal = document.getElementById('modalRegistrarContatoOrientador');
     if (!modal) return;
 
-    const turmaId = this.turmaId || 1;
-    const alunos = window.db ? window.db.getAlunosPorTurma(turmaId, 'TODOS').filter(a => a.statusMatricula === 'ATIVO') : [];
+    const turmas = window.db ? (window.db.getTurmas() || []) : [];
+    const turmaMap = new Map();
+    turmas.forEach(t => turmaMap.set(t.id, t.codigo));
+
+    const alunos = window.db ? (window.db.data.alunos || []).filter(a => a.statusMatricula === 'ATIVO') : [];
     const select = document.getElementById('selectContatoAluno');
     if (select) {
-      select.innerHTML = alunos.map(a => `<option value="${a.id}">${a.nome} (${a.ra || 'RA' + a.id})</option>`).join('');
+      select.innerHTML = alunos.map(a => `<option value="${a.id}">${a.nome} (${turmaMap.get(a.turmaId) || 'SENAI'})</option>`).join('');
       if (alunoId) {
         select.value = String(alunoId);
       }
@@ -895,9 +1034,13 @@ class PortalOrientadorController {
 
     const selAluno = document.getElementById('selectAtendimentoAluno');
     if (selAluno && window.db) {
-      const alunos = window.db.getAlunosPorTurma(this.turmaId, 'TODOS')
+      const turmas = window.db.getTurmas() || [];
+      const turmaMap = new Map();
+      turmas.forEach(t => turmaMap.set(t.id, t.codigo));
+
+      const alunos = (window.db.data.alunos || [])
         .filter(a => a.statusMatricula === 'ATIVO');
-      selAluno.innerHTML = alunos.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+      selAluno.innerHTML = alunos.map(a => `<option value="${a.id}">${a.nome} (${turmaMap.get(a.turmaId) || 'SENAI'})</option>`).join('');
       if (alunoIdPre) selAluno.value = alunoIdPre;
     }
 
@@ -955,11 +1098,14 @@ class PortalOrientadorController {
     const modal = document.getElementById('modalAgendarCompensacaoOrientador');
     if (!modal) return;
 
-    const turmaId = this.turmaId || 1;
-    const alunos = window.db ? window.db.getAlunosPorTurma(turmaId, 'TODOS').filter(a => a.statusMatricula === 'ATIVO') : [];
+    const turmas = window.db ? (window.db.getTurmas() || []) : [];
+    const turmaMap = new Map();
+    turmas.forEach(t => turmaMap.set(t.id, t.codigo));
+
+    const alunos = window.db ? (window.db.data.alunos || []).filter(a => a.statusMatricula === 'ATIVO') : [];
     const select = document.getElementById('selectCompensacaoAluno');
     if (select) {
-      select.innerHTML = alunos.map(a => `<option value="${a.id}">${a.nome} (${a.ra || 'RA' + a.id})</option>`).join('');
+      select.innerHTML = alunos.map(a => `<option value="${a.id}">${a.nome} (${turmaMap.get(a.turmaId) || 'SENAI'})</option>`).join('');
       if (alunoId) {
         select.value = String(alunoId);
       }
@@ -1087,14 +1233,18 @@ class PortalOrientadorController {
     const tbody = document.getElementById('orientadorRelatorioTbody');
     if (!tbody) return;
 
-    const turmaId = this.turmaId || 1;
-    const turma = (window.db.data.turmas || []).find(t => Number(t.id) === Number(turmaId));
-    const alunos = window.db.getAlunosPorTurma(turmaId, 'TODOS').filter(a => a.statusMatricula === 'ATIVO');
-    const sintese = (window.db.getSinteseConsolidada && window.db.getSinteseConsolidada(turmaId)) || { alunos: [] };
-    const sinteseMap = new Map();
-    ((sintese && sintese.alunos) || []).forEach(item => sinteseMap.set(item.aluno.id, item));
+    const turmas = window.db.data.turmas || [];
+    const turmaMap = new Map();
+    turmas.forEach(t => turmaMap.set(t.id, t));
 
-    const compensacoes = (window.db.getCompensacoes && window.db.getCompensacoes(turmaId)) || [];
+    const alunos = (window.db.data.alunos || []).filter(a => a.statusMatricula === 'ATIVO');
+    const sinteseMap = new Map();
+    turmas.forEach(t => {
+      const sintese = (window.db.getSinteseConsolidada && window.db.getSinteseConsolidada(t.id)) || { alunos: [] };
+      ((sintese && sintese.alunos) || []).forEach(item => sinteseMap.set(item.aluno.id, item));
+    });
+
+    const compensacoes = (window.db.getCompensacoes && window.db.getCompensacoes(null)) || (window.db.data.compensacoes || []);
     const todosContatos = (window.db.getContatosOrientacao && window.db.getContatosOrientacao()) || [];
 
     let totalFreq = 0;
@@ -1126,7 +1276,7 @@ class PortalOrientadorController {
 
       return {
         aluno: al,
-        turma: turma,
+        turma: turmaMap.get(al.turmaId) || null,
         freq: freq,
         faltas: hist.faltas || 0,
         atrasos: hist.atrasos || 0,

@@ -599,8 +599,8 @@ class AppController {
     const cfg = {
       'ABERTO':     { label: 'Aberto',                     cls: 'status-aberto' },
       'AGUARDANDO': { label: 'Aguardando Coordenação',     cls: 'status-aguardando' },
-      'APROVADO':   { label: 'Fechado e Aprovado ✓',       cls: 'status-aprovado' },
-      'DEVOLVIDO':  { label: 'Devolvido para Ajustes ⚠️',  cls: 'status-devolvido' },
+      'APROVADO':   { label: 'Fechado e Aprovado',         cls: 'status-aprovado' },
+      'DEVOLVIDO':  { label: 'Devolvido para Ajustes',     cls: 'status-devolvido' },
     };
     const c = cfg[statusDiario] || cfg['ABERTO'];
     badge.textContent = c.label;
@@ -912,19 +912,25 @@ class AppController {
       `;
     }).join('');
 
-    // Histórico de turmas (concluídas)
+    // Histórico de turmas (concluídas - Somente Leitura)
     if (listHistorico) {
       const turmasHistorico = window.db.getTurmas('CONCLUIDA');
       if (turmasHistorico.length === 0) {
         listHistorico.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:13px;">Nenhuma turma anterior arquivada.</div>`;
       } else {
-        listHistorico.innerHTML = turmasHistorico.map(t => {
+        const avisoHeader = `
+          <div style="font-size:12px; color:#475569; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>Turmas de semestres anteriores encerradas. Registros travados em modo somente leitura (alterações bloqueadas).</span>
+          </div>
+        `;
+        listHistorico.innerHTML = avisoHeader + turmasHistorico.map(t => {
           const iconeSvg = this.getUCIconeSvg(t.icone || 'code');
           const curso = t.cursoNome || 'Técnico em Redes de Computadores';
           const nomeUC = t.ucNome || t.nome;
 
           return `
-            <div class="ucs-item-row" style="opacity:0.85;" onclick="window.app.selecionarUnidadeCurricular(${t.id})" title="Acessar ${nomeUC}">
+            <div class="ucs-item-row" style="opacity:0.9; cursor:pointer;" onclick="window.app.abrirTurmaHistoricoSomenteLeitura(${t.id})" title="Acessar ${nomeUC} (Modo Somente Leitura)">
               <div class="ucs-item-left">
                 <div class="ucs-item-icon" style="background-color:rgba(0,0,0,0.05); color:var(--text-muted);">
                   ${iconeSvg}
@@ -934,8 +940,11 @@ class AppController {
                   <p class="ucs-item-meta">Turma: ${t.codigo} | Curso: ${curso} (Ano ${t.ano})</p>
                 </div>
               </div>
-              <div class="ucs-item-right">
-                <span class="badge-periodo" style="background-color:#fee2e2; color:#dc2626;">Concluída</span>
+              <div class="ucs-item-right" style="gap:8px;">
+                <span class="badge-turma-encerrada" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px; display:inline-flex; align-items:center; gap:4px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  Turma Encerrada
+                </span>
                 <div class="ucs-item-arrow">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="9 18 15 12 9 6"></polyline>
@@ -947,6 +956,27 @@ class AppController {
         }).join('');
       }
     }
+  }
+
+  abrirTurmaHistoricoSomenteLeitura(turmaId) {
+    const turma = window.db ? window.db.getTurmaById(turmaId) : null;
+    if (turma) {
+      turma.diarioFechado = true;
+      turma.status = 'CONCLUIDA';
+      this.turmaAtiva = turma;
+      const codigoEl = document.getElementById('sidebarTurmaCodigo');
+      if (codigoEl) codigoEl.textContent = turma.codigo;
+    }
+    this.navegarPara('diario');
+    const sel = document.getElementById('selectDiarioTurma');
+    if (sel && turma) {
+      sel.value = turmaId;
+    }
+    if (window.diarioController) {
+      window.diarioController.turmaId = turmaId;
+      window.diarioController.carregarChamada();
+    }
+    this.mostrarToast('Turma anterior encerrada. Visualização em modo somente leitura (edição bloqueada).', 'info');
   }
 
   toggleHistoricoTurmas() {
@@ -1265,7 +1295,7 @@ class AppController {
     if (bannerGreeting) {
       const primeiroNome = user.nome.split(' ')[0].toUpperCase();
       if (isCoordenador) {
-        bannerGreeting.innerText = 'Portal da Coordenação, ' + primeiroNome + '! 📋';
+        bannerGreeting.innerText = 'Portal da Coordenação, ' + primeiroNome + '!';
       } else if (isAluno) {
         bannerGreeting.innerText = 'Ambiente Acadêmico de ' + primeiroNome + '! 🎓';
       } else if (isOrientador) {
@@ -1490,7 +1520,7 @@ class AppController {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  alternarFreqTab(tab) {
+  alternarFreqTab(tab, autoScroll = false) {
     const tabVisao = document.getElementById('alunoFreqTab_visaoGeral');
     const tabHist = document.getElementById('alunoFreqTab_historicoAulas');
     const tabNotas = document.getElementById('alunoSubView_notas');
@@ -1513,6 +1543,13 @@ class AppController {
       this._renderizarDisciplinasAluno();
     } else if (tab === 'historicoAulas') {
       this.renderizarHistoricoAulasAluno();
+    }
+
+    if (autoScroll) {
+      const targetEl = tab === 'notas' ? tabNotas : (tab === 'historicoAulas' ? tabHist : tabVisao);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   }
 
@@ -1787,24 +1824,24 @@ class AppController {
       const pctProg = Math.min(100, Math.round((media / mediaMins) * 100));
       const progClass = media >= mediaMins ? 'aprovado' : (media >= mediaMins * 0.7 ? 'risco' : 'reprovado');
 
-      // Selo de status oficial
-      let seloClass = 'selo-parcial', seloLabel = '📖 Parcial (Em Andamento)';
+      // Selo de status oficial limpo sem emojis
+      let seloClass = 'selo-parcial', seloLabel = 'Parcial (Em Andamento)';
       if (statusDiario === 'AGUARDANDO') {
         seloClass = 'selo-aguardando';
-        seloLabel = '⏳ Aguardando Coordenação';
+        seloLabel = 'Aguardando Coordenação';
       } else if (statusDiario === 'APROVADO') {
         if (media >= mediaMins && freq >= 75) {
           seloClass = 'selo-aprovado-of';
-          seloLabel = '✅ Oficial — Aprovado';
+          seloLabel = 'Oficial — Aprovado';
         } else if (media < mediaMins && freq < 75) {
           seloClass = 'selo-reprovado-of';
-          seloLabel = '❌ Reprovado por Nota e Falta';
+          seloLabel = 'Reprovado por Nota e Falta';
         } else if (freq < 75) {
           seloClass = 'selo-reprovado-of';
-          seloLabel = '❌ Reprovado por Falta';
+          seloLabel = 'Reprovado por Falta';
         } else {
           seloClass = 'selo-reprovado-of';
-          seloLabel = '❌ Reprovado por Nota';
+          seloLabel = 'Reprovado por Nota';
         }
       }
 
@@ -1914,13 +1951,13 @@ class AppController {
     }
   }
 
-  // --- Filtro de Bimestre nas Notas do Aluno ---
-  filtrarNotasAlunoBimestre(bimestre) {
-    this.alunoBimestreAtivo = bimestre;
-    const botoes = document.querySelectorAll('.btn-bimestre-filtro');
+  // --- Filtro de Semestre nas Notas do Aluno ---
+  filtrarNotasAlunoSemestre(semestre) {
+    this.alunoSemestreAtivo = semestre;
+    const botoes = document.querySelectorAll('.btn-semestre-filtro');
     botoes.forEach(btn => {
-      const bVal = btn.getAttribute('data-bimestre');
-      const isAtivo = (String(bVal) === String(bimestre));
+      const sVal = btn.getAttribute('data-semestre');
+      const isAtivo = (String(sVal) === String(semestre));
       btn.classList.toggle('active', isAtivo);
       if (isAtivo) {
         btn.style.background = '#005594';
@@ -1933,6 +1970,11 @@ class AppController {
       }
     });
     this.renderizarNotasAluno();
+  }
+
+  // --- Filtro de Bimestre nas Notas do Aluno (Retrocompatibilidade) ---
+  filtrarNotasAlunoBimestre(bimestre) {
+    this.filtrarNotasAlunoSemestre(bimestre);
   }
 
   // --- Modal de Seleção de Semestre do Boletim ---
@@ -1998,17 +2040,28 @@ class AppController {
     const ucs = window.db.getUCsPorTurma(turmaId);
     let somaMedias = 0;
     let totalUcsValidas = 0;
-    const bimestreAtivo = this.alunoBimestreAtivo || 'TODOS';
+    const semestreAtivo = this.alunoSemestreAtivo || this.alunoBimestreAtivo || 'TODOS';
 
     tbodyNotas.innerHTML = ucs.map(uc => {
       let avaliacoes = window.db.getAvaliacoesPorUC(turmaId, uc.id) || [];
-      if (bimestreAtivo !== 'TODOS') {
-        avaliacoes = avaliacoes.filter(av => String(av.bimestre) === String(bimestreAtivo));
+      if (semestreAtivo !== 'TODOS') {
+        avaliacoes = avaliacoes.filter(av => {
+          if (av.semestre !== undefined && av.semestre !== null) {
+            return String(av.semestre) === String(semestreAtivo);
+          }
+          if (String(semestreAtivo) === '1') {
+            return av.bimestre === 1 || av.bimestre === 2 || !av.bimestre;
+          }
+          if (String(semestreAtivo) === '2') {
+            return av.bimestre === 3 || av.bimestre === 4;
+          }
+          return true;
+        });
       }
 
       // Calcular média conforme o escopo de avaliações selecionado
       let mediaCalculada = '—';
-      if (bimestreAtivo === 'TODOS') {
+      if (semestreAtivo === 'TODOS') {
         const resMedia = window.db.calcularMediaAluno(turmaId, uc.id, aluno.id);
         const mediaValor = resMedia.media <= 10 ? resMedia.media * 10 : resMedia.media;
         mediaCalculada = Number(mediaValor || 80.0).toFixed(1);
@@ -2614,6 +2667,11 @@ class AppController {
       cardDocente.style.display = isAluno ? 'none' : 'block';
     }
 
+    const containerFiltro = document.getElementById('containerFiltroTurmaMateriais');
+    if (containerFiltro) {
+      containerFiltro.style.display = isAluno ? 'none' : 'flex';
+    }
+
     const selectTurma = document.getElementById('selectMateriaisTurmaFiltro');
     if (selectTurma) {
       const turmas = window.db.getTurmas() || [];
@@ -2633,8 +2691,14 @@ class AppController {
       }
     }
 
-    const selVal = selectTurma ? selectTurma.value : (this.turmaAtiva ? this.turmaAtiva.id : null);
-    this.filtrarMateriaisPorTurma(selVal);
+    let turmaFiltroVal = null;
+    if (isAluno) {
+      const aluno = window.db.getAlunoLogado();
+      turmaFiltroVal = (aluno && aluno.turmaId) ? aluno.turmaId : 'TODAS';
+    } else {
+      turmaFiltroVal = selectTurma ? selectTurma.value : (this.turmaAtiva ? this.turmaAtiva.id : null);
+    }
+    this.filtrarMateriaisPorTurma(turmaFiltroVal);
   }
 
   filtrarMateriaisPorTurma(turmaId) {
@@ -2902,10 +2966,21 @@ class AppController {
       if (btnDl) {
         btnDl.onclick = () => this.baixarMaterialPDF(item.id);
       }
+      const btnClose = document.getElementById('pdfModalClose');
+      if (btnClose) {
+        btnClose.onclick = () => this.fecharModalPdf();
+      }
       modal.classList.remove('hidden');
     } else if (pdfUrl) {
-      window.open(pdfUrl, '_blank');
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
     }
+  }
+
+  fecharModalPdf() {
+    const modal = document.getElementById('pdfModal');
+    const iframe = document.getElementById('pdfModalIframe');
+    if (iframe) iframe.src = '';
+    if (modal) modal.classList.add('hidden');
   }
 
   baixarMaterialPDF(id) {
@@ -2939,7 +3014,7 @@ class AppController {
   }
 
   // =========================================================================
-  // GESTÃO DO CALENDÁRIO OFICIAL DA COORDENAÇÃO
+  // GESTÃO DO CALENDÁRIO OFICIAL DA COORDENAÇÃO (VISÃO ANUAL + LISTA UNIFICADAS)
   // =========================================================================
   renderizarCalendario(categoriaFiltro = 'TODOS') {
     if (!window.db) return;
@@ -2949,6 +3024,13 @@ class AppController {
       boxAcoes.style.display = isCoord ? 'flex' : 'none';
     }
 
+    // Visão Anual (12 Meses) SEMPRE visível no topo por padrão
+    const visaoAnual = document.getElementById('calendarioVisaoAnual');
+    if (visaoAnual) {
+      visaoAnual.style.display = 'block';
+      this.renderizarCalendarioAnual();
+    }
+
     let eventos = window.db.getEventosCalendario() || [];
     if (categoriaFiltro && categoriaFiltro !== 'TODOS') {
       eventos = eventos.filter(e => e.categoria === categoriaFiltro);
@@ -2956,6 +3038,7 @@ class AppController {
 
     const grid = document.getElementById('gridEventosCalendario');
     if (!grid) return;
+    grid.style.display = 'grid';
 
     if (eventos.length === 0) {
       grid.innerHTML = `
@@ -3023,39 +3106,14 @@ class AppController {
 
   alternarModoCalendario(modo) {
     this._modoCalendarioAtivo = modo;
-    const btnLista = document.getElementById('btnCalModoLista');
-    const btnAnual = document.getElementById('btnCalModoAnual');
     const visaoLista = document.getElementById('gridEventosCalendario');
     const visaoAnual = document.getElementById('calendarioVisaoAnual');
 
-    if (modo === 'anual') {
-      if (btnLista) {
-        btnLista.style.background = 'transparent';
-        btnLista.style.color = '#64748b';
-        btnLista.style.fontWeight = '600';
-      }
-      if (btnAnual) {
-        btnAnual.style.background = '#ffffff';
-        btnAnual.style.color = '#0f172a';
-        btnAnual.style.fontWeight = '700';
-      }
-      if (visaoLista) visaoLista.style.display = 'none';
-      if (visaoAnual) visaoAnual.style.display = 'block';
-      this.renderizarCalendarioAnual();
-    } else {
-      if (btnLista) {
-        btnLista.style.background = '#ffffff';
-        btnLista.style.color = '#0f172a';
-        btnLista.style.fontWeight = '700';
-      }
-      if (btnAnual) {
-        btnAnual.style.background = 'transparent';
-        btnAnual.style.color = '#64748b';
-        btnAnual.style.fontWeight = '600';
-      }
-      if (visaoLista) visaoLista.style.display = 'grid';
-      if (visaoAnual) visaoAnual.style.display = 'none';
-      this.renderizarCalendario(this._categoriaCalendarioAtiva || 'TODOS');
+    // Ambos permanecem sempre visíveis; apenas rola suavemente para foco se solicitado
+    if (modo === 'anual' && visaoAnual) {
+      visaoAnual.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (modo === 'lista' && visaoLista) {
+      visaoLista.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 
@@ -3064,11 +3122,7 @@ class AppController {
     document.querySelectorAll('.sintese-tab-btn[data-cal-cat]').forEach(b => {
       b.classList.toggle('active', b.getAttribute('data-cal-cat') === categoria);
     });
-    if (this._modoCalendarioAtivo === 'anual') {
-      this.renderizarCalendarioAnual();
-    } else {
-      this.renderizarCalendario(categoria);
-    }
+    this.renderizarCalendario(categoria);
   }
 
   renderizarCalendarioAnual(ano = 2026) {
@@ -3291,15 +3345,19 @@ class AppController {
       const isFechamento = ev.categoria === 'Prazo de Fechamento de Notas';
       const dt = ev.data ? ev.data.split('-').reverse().join('/') : '';
       return `
-        <div style="background: ${isFechamento ? '#fff1f2' : '#f8fafc'}; border: 1px solid ${isFechamento ? '#fecdd3' : '#e2e8f0'}; border-radius: 8px; padding: 12px 14px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-size: 11px; font-weight: 700; color: ${isFechamento ? '#be123c' : '#0369a1'};">
-              ${isFechamento ? '⚠️ PRAZO INSTITUCIONAL' : ev.categoria}
-            </span>
-            <span style="font-size: 11px; font-weight: 600; color: #475569;">📅 ${dt}</span>
+        <div style="background: #ffffff; border: 1px solid ${isFechamento ? '#fca5a5' : '#e2e8f0'}; border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 6px;">
+              <span class="badge" style="font-size: 11px; font-weight: 700; background: ${isFechamento ? '#fee2e2' : '#f1f5f9'}; color: ${isFechamento ? '#991b1b' : '#0369a1'}; padding: 3px 8px; border-radius: 4px;">
+                ${isFechamento ? 'Prazo Institucional' : ev.categoria}
+              </span>
+              <span style="font-size: 11px; font-weight: 600; color: #475569; background: #f8fafc; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                ${dt}
+              </span>
+            </div>
+            <div style="font-size: 13.5px; font-weight: 700; color: #0f172a; line-height: 1.35; margin-bottom: 4px;">${ev.titulo}</div>
+            <div style="font-size: 12px; color: #64748b; line-height: 1.4;">${ev.descricao || 'Data oficial do calendário acadêmico SENAI.'}</div>
           </div>
-          <div style="font-size: 13px; font-weight: 700; color: #0f172a; line-height: 1.3;">${ev.titulo}</div>
-          <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">${ev.descricao || ''}</div>
         </div>
       `;
     }).join('');
@@ -3316,15 +3374,17 @@ class AppController {
       const isFechamento = ev.categoria === 'Prazo de Fechamento de Notas';
       const dt = ev.data ? ev.data.split('-').reverse().join('/') : '';
       return `
-        <div style="background: ${isFechamento ? '#fff1f2' : '#f8fafc'}; border: 1px solid ${isFechamento ? '#fecdd3' : '#e2e8f0'}; border-radius: 8px; padding: 12px 14px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-size: 11px; font-weight: 700; color: ${isFechamento ? '#be123c' : '#0284c7'};">
+        <div style="background: #ffffff; border: 1px solid ${isFechamento ? '#fca5a5' : '#e2e8f0'}; border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 6px;">
+            <span class="badge" style="font-size: 11px; font-weight: 700; background: ${isFechamento ? '#fee2e2' : '#f1f5f9'}; color: ${isFechamento ? '#991b1b' : '#0284c7'}; padding: 3px 8px; border-radius: 4px;">
               ${ev.categoria}
             </span>
-            <span style="font-size: 11px; font-weight: 600; color: #475569;">📅 ${dt}</span>
+            <span style="font-size: 11px; font-weight: 600; color: #475569; background: #f8fafc; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0;">
+              ${dt}
+            </span>
           </div>
-          <div style="font-size: 13px; font-weight: 700; color: #0f172a; line-height: 1.3;">${ev.titulo}</div>
-          <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">${ev.descricao || ''}</div>
+          <div style="font-size: 13.5px; font-weight: 700; color: #0f172a; line-height: 1.35; margin-bottom: 4px;">${ev.titulo}</div>
+          <div style="font-size: 12px; color: #64748b; line-height: 1.4;">${ev.descricao || ''}</div>
         </div>
       `;
     }).join('');
@@ -3371,7 +3431,7 @@ class AppController {
         btnConcluir.textContent = 'Diário Oficializado pela Coordenação';
       } else if (meuRegistro && meuRegistro.fechado) {
         btnConcluir.disabled = true;
-        btnConcluir.textContent = '✓ Minha Etapa Já Concluída';
+        btnConcluir.textContent = 'Minha Etapa Já Concluída';
       } else {
         btnConcluir.disabled = false;
         btnConcluir.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Concluir e Fechar Minha Etapa (Professor Responsável)`;
@@ -3389,7 +3449,7 @@ class AppController {
                 <span style="font-size: 11px; color: #64748b;">${p.papel || 'Professor Responsável'}</span>
               </div>
               <span class="badge" style="background: ${p.fechado ? '#16a34a' : '#d97706'}; color: #ffffff; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
-                ${p.fechado ? '✓ Concluído' : '⏳ Pendente'}
+                ${p.fechado ? 'Concluído' : 'Pendente'}
               </span>
             </div>
           `).join('')}

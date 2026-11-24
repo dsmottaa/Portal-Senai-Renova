@@ -41,9 +41,16 @@ class DiarioController {
   }
 
   isDiarioBloqueado() {
-    if (!window.db || !window.db.getStatusDiario) return false;
-    const status = window.db.getStatusDiario(this.turmaId);
-    return status === 'AGUARDANDO' || status === 'APROVADO';
+    if (!window.db) return false;
+    const turma = (window.db.data.turmas || []).find(t => t.id === Number(this.turmaId));
+    if (turma && (turma.status === 'CONCLUIDA' || turma.diarioFechado === true)) {
+      return true;
+    }
+    if (window.db.getStatusDiario) {
+      const status = window.db.getStatusDiario(this.turmaId);
+      return status === 'AGUARDANDO' || status === 'APROVADO';
+    }
+    return false;
   }
 
   atualizarHeaderInfo() {
@@ -326,6 +333,7 @@ class DiarioController {
   }
 
   carregarConteudoDaData() {
+    this.popularSelectPtd();
     const textarea = document.getElementById('textareaConteudoMinistrado');
     if (!textarea || !window.db) return;
 
@@ -341,6 +349,42 @@ class DiarioController {
       textarea.value = '';
     }
     this.atualizarContadorConteudo(textarea);
+  }
+
+  popularSelectPtd() {
+    const select = document.getElementById('selectPtdConteudo');
+    if (!select || !window.db) return;
+
+    const ucs = window.db.data.unidadesCurriculares || [];
+    const uc = ucs.find(u => u.id === Number(this.ucId)) || ucs[0];
+
+    // Busca tópicos cadastrados no PTD da UC ou padrão estruturado
+    let topicos = (uc && Array.isArray(uc.conteudosProgramados) && uc.conteudosProgramados.length > 0)
+      ? uc.conteudosProgramados
+      : null;
+
+    if (!topicos && window.db.data.ptds && window.db.data.ptds.length > 0) {
+      const ptdReg = window.db.data.ptds.find(p => p.ucId === Number(this.ucId) || (p.dados && p.dados.cronogramaAulas));
+      if (ptdReg && ptdReg.dados && Array.isArray(ptdReg.dados.cronogramaAulas)) {
+        topicos = ptdReg.dados.cronogramaAulas.map(c => ({
+          tema: c.tema,
+          conteudo: c.conteudo
+        }));
+      }
+    }
+
+    if (!topicos || topicos.length === 0) {
+      topicos = [
+        { tema: 'Unidade 1 - Introdução aos Elementos Semânticos', conteudo: 'Introdução aos elementos semânticos do HTML (header, nav, main, section, article, aside e footer).' },
+        { tema: 'Unidade 2 - Estilização Moderna CSS', conteudo: 'Estilização moderna com CSS Flexbox, Grid Layout e propriedades de alinhamento responsivo.' },
+        { tema: 'Unidade 3 - Fundamentos de JavaScript e DOM', conteudo: 'Conceitos fundamentais de JavaScript: variáveis, funções, eventos e manipulação direta da árvore DOM.' },
+        { tema: 'Unidade 4 - Persistência Local e Acessibilidade Web', conteudo: 'Implementação de armazenamento local com localStorage, acessibilidade WCAG e conformidade com VLibras.' }
+      ];
+    }
+
+    this._topicosPtdAtivos = topicos;
+    select.innerHTML = '<option value="">-- Selecione o tópico do PTD --</option>' + 
+      topicos.map((top, idx) => `<option value="${idx}">${top.tema}</option>`).join('');
   }
 
   onSubturmaFigmaChange(novaSubturma) {
@@ -360,7 +404,12 @@ class DiarioController {
     const textarea = document.getElementById('textareaConteudoMinistrado');
     if (!textarea) return;
 
-    if (val === '1') {
+    if (val === '' || val === null || val === undefined) return;
+
+    if (this._topicosPtdAtivos && this._topicosPtdAtivos[val]) {
+      const top = this._topicosPtdAtivos[val];
+      textarea.value = top.conteudo || top.tema || '';
+    } else if (val === '1') {
       textarea.value = 'Introdução aos elementos semânticos do HTML (header, nav, main, section, article, aside e footer).';
     } else if (val === '2') {
       textarea.value = 'Estilização moderna com CSS Flexbox, Grid Layout e propriedades de alinhamento responsivo.';

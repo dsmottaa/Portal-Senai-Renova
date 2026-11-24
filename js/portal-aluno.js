@@ -69,7 +69,7 @@ class PortalAlunoController {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M12 5v14M5 12h14"></path>
             </svg>
-            <span>+ Solicitar Compensação / Enviar Atestado</span>
+            <span>Solicitar Compensação / Enviar Atestado</span>
           </button>
         </div>
 
@@ -153,7 +153,7 @@ class PortalAlunoController {
                       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                         <strong style="color:#0f172a;">${c.atividade || 'Atividade de Reposição'}</strong>
                         <span style="background:${cumprido ? '#dcfce7' : '#e0f2fe'}; color:${cumprido ? '#166534' : '#0369a1'}; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:9999px;">
-                          ${cumprido ? '✓ Cumprida' : 'Agendada'}
+                          ${cumprido ? 'Cumprida' : 'Agendada'}
                         </span>
                       </div>
                       <div style="color:#475569;">
@@ -168,7 +168,7 @@ class PortalAlunoController {
                   return `
                     <div style="background:#ffffff; border:1px solid #fed7aa; border-left:3px solid #f97316; border-radius:8px; padding:10px 12px; font-size:12px;">
                       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                        <strong style="color:#9a3412;">Combinado com a Orientadora</strong>
+                        <strong style="color:#9a3412;">Combinado com a Orientação Educacional</strong>
                         <span style="font-size:10.5px; color:#7c2d12; font-weight:600;">${at.data}</span>
                       </div>
                       <div style="color:#334155; font-size:11.5px; margin-bottom:4px;">${at.resumo}</div>

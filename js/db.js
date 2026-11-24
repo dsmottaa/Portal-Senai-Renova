@@ -3220,10 +3220,19 @@ class RenovaDB {
 
   // --- RADAR DO DIA DO ORIENTADOR (FONTE ÚNICA DE VERDADE) ---
   getRadarOrientador(turmaId = null) {
-    const targetTurmaId = turmaId ? Number(turmaId) : 1;
-    const turma = (this.data.turmas || []).find(t => t.id === targetTurmaId) || (this.data.turmas && this.data.turmas[0]) || null;
-    let alunos = this.getAlunosPorTurma(targetTurmaId, 'TODOS')
-      .filter(a => a.statusMatricula === 'ATIVO');
+    const isConsolidado = !turmaId || turmaId === 'TODOS' || turmaId === 'TODAS';
+    let targetTurmaId = null;
+    let turma = null;
+    let alunos = [];
+
+    if (!isConsolidado) {
+      targetTurmaId = Number(turmaId);
+      turma = (this.data.turmas || []).find(t => t.id === targetTurmaId) || (this.data.turmas && this.data.turmas[0]) || null;
+      alunos = this.getAlunosPorTurma(targetTurmaId, 'TODOS').filter(a => a.statusMatricula === 'ATIVO');
+    } else {
+      alunos = (this.data.alunos || []).filter(a => a.statusMatricula === 'ATIVO');
+    }
+
     if (alunos.length === 0 && this.data.alunos) {
       alunos = this.data.alunos.filter(a => a.statusMatricula === 'ATIVO');
     }
@@ -3235,19 +3244,26 @@ class RenovaDB {
 
     // Atestados Pendentes
     const atestadosPendentes = (this.data.justificativas || []).filter(j => 
-      j.status === 'PENDENTE' && (!targetTurmaId || Number(j.turmaId) === targetTurmaId)
+      j.status === 'PENDENTE' && (isConsolidado || !targetTurmaId || Number(j.turmaId) === targetTurmaId)
     );
 
     // Compensações em aberto
     const compensacoesAbertas = (this.data.compensacoes || []).filter(c => 
       (c.status === 'PENDENTE' || c.status === 'AGENDADA' || c.status === 'EM_ANDAMENTO') &&
-      (!targetTurmaId || Number(c.turmaId) === targetTurmaId)
+      (isConsolidado || !targetTurmaId || Number(c.turmaId) === targetTurmaId)
     );
 
     // Faltas sem justificativa & Atrasos
-    const sintese = (this.getSinteseConsolidada && this.getSinteseConsolidada(targetTurmaId)) || { alunos: [] };
     const sinteseMap = new Map();
-    ((sintese && sintese.alunos) || []).forEach(item => sinteseMap.set(item.aluno.id, item));
+    if (!isConsolidado && targetTurmaId) {
+      const sintese = (this.getSinteseConsolidada && this.getSinteseConsolidada(targetTurmaId)) || { alunos: [] };
+      ((sintese && sintese.alunos) || []).forEach(item => sinteseMap.set(item.aluno.id, item));
+    } else {
+      (this.data.turmas || []).forEach(t => {
+        const s = (this.getSinteseConsolidada && this.getSinteseConsolidada(t.id)) || { alunos: [] };
+        ((s && s.alunos) || []).forEach(item => sinteseMap.set(item.aluno.id, item));
+      });
+    }
 
     let totalFaltasSemJust = 0;
     let total5Atrasos = 0;
@@ -3294,7 +3310,7 @@ class RenovaDB {
       if (urgenciaScore > 0) {
         filaUrgencia.push({
           aluno: al,
-          turma: turma,
+          turma: turma || (this.data.turmas || []).find(t => t.id === al.turmaId) || null,
           hist: hist,
           urgenciaScore,
           tipoUrgencia,
@@ -3493,6 +3509,10 @@ class RenovaDB {
 
   // --- STATUS E FECHAMENTO DO DIÁRIO ---
   getStatusDiario(turmaId) {
+    const turma = (this.data.turmas || []).find(t => t.id === Number(turmaId));
+    if (turma && (turma.status === 'CONCLUIDA' || turma.diarioFechado === true)) {
+      return 'APROVADO';
+    }
     const sols = (this.data.solicitacoesFechamento || [])
       .filter(s => s.turmaId === Number(turmaId))
       .sort((a, b) => b.id - a.id);
