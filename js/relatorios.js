@@ -299,7 +299,7 @@ class RelatoriosController {
       doc.setTextColor(...this.mediumGray);
       doc.text(userNome, margin, linhaY + 4);
       doc.text('Docente / Responsável', margin, linhaY + 8);
-      doc.text('GUILIA PORTUGAL', pageWidth - margin - 65, linhaY + 4);
+      doc.text('PAULO SILVA', pageWidth - margin - 65, linhaY + 4);
       doc.text('Coordenação Pedagógica / Direção', pageWidth - margin - 65, linhaY + 8);
     }
   }

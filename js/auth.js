@@ -40,8 +40,8 @@ class AuthService {
 
     // Se não encontrou usuário exato, mapeia inteligentemente pelo que foi digitado
     if (!usuario) {
-      if (clean.includes('coord') || clean.includes('paulo') || clean.includes('guilia')) {
-        usuario = window.db ? window.db.getUsuarioById(2) : null; // Guilia Portugal (Coordenação)
+      if (clean.includes('coord') || clean.includes('paulo')) {
+        usuario = window.db ? window.db.getUsuarioById(2) : null; // Paulo Silva (Coordenação)
       } else if (clean.includes('mariana')) {
         usuario = window.db ? window.db.getUsuarioById(8) : null; // Mariana Silva Rocha
         if (!usuario) {
@@ -188,7 +188,7 @@ class AuthService {
 
     const fallbacks = {
       PROFESSOR: { id: 8, nome: 'MARIANA SILVA ROCHA', email: 'mariana.silva@sp.senai.br', cpf: '333.444.555-66', matriculaFuncional: 'SENAI-DOC-2025-102' },
-      COORDENACAO: { id: 2, nome: 'GUILIA PORTUGAL', email: 'coord.guilia@sp.senai.br', cpf: '987.654.321-11', matriculaFuncional: 'SENAI-ADM-2022-014' },
+      COORDENACAO: { id: 2, nome: 'PAULO SILVA', email: 'coord.paulo@sp.senai.br', cpf: '987.654.321-11', matriculaFuncional: 'SENAI-ADM-2022-014' },
       ORIENTADOR: { id: 10, nome: 'CARLA BEATRIZ MENDES', email: 'orientador@senai.br', cpf: '555.666.777-88', matriculaFuncional: 'SENAI-ORI-2024-015' },
       ALUNO: { id: 52, alunoId: 52, nome: 'Pedro Henrique', email: 'pedro.henrique@aluno.senai.br', cpf: '111.222.333-44', matriculaFuncional: 'RA2026052' }
     };

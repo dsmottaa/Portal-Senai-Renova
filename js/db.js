@@ -32,10 +32,10 @@ const INITIAL_DB = {
     {
       id: 2,
       cpf: '987.654.321-11',
-      email: 'coord.guilia@sp.senai.br',
+      email: 'coord.paulo@sp.senai.br',
       emailAlternativo: 'coordenador@senai.br',
       senha: '123',
-      nome: 'GUILIA PORTUGAL',
+      nome: 'PAULO SILVA',
       perfil: 'COORDENACAO',
       matriculaFuncional: 'SENAI-ADM-2022-014'
     },
@@ -1375,7 +1375,7 @@ const INITIAL_DB = {
       documento: 'atestado_medico_crm_54210.pdf',
       status: 'ABONADA',
       parecer: 'Atestado médico de 7 dias homologado conforme CID-10.',
-      cadastradoPor: 'Guilia Portugal (Coordenação)',
+      cadastradoPor: 'Paulo Silva (Coordenação)',
       homologadoPor: 'CARLA BEATRIZ MENDES (Orientação)',
       dataCadastro: '2026-10-19',
       dataHomologacao: '2026-10-19'
@@ -1574,7 +1574,7 @@ const INITIAL_DB = {
       descricao: 'Aluno atingiu a marca de 5 atrasos. Notificado e em processo de acompanhamento pedagógico.',
       status: 'EM_ANALISE',
       data: '2026-10-21',
-      autor: 'Guilia Portugal (Coordenação)'
+      autor: 'Paulo Silva (Coordenação)'
     },
     {
       id: 3,
@@ -2344,8 +2344,8 @@ class RenovaDB {
         }
         const coordUser = (this.data.usuarios || []).find(u => u.id === 2 || u.perfil === 'COORDENACAO');
         if (coordUser) {
-          coordUser.nome = 'GUILIA PORTUGAL';
-          coordUser.email = 'coord.guilia@sp.senai.br';
+          coordUser.nome = 'PAULO SILVA';
+          coordUser.email = 'coord.paulo@sp.senai.br';
         }
         const alunoUser = (this.data.usuarios || []).find(u => u.id === 9 || u.perfil === 'ALUNO');
         if (alunoUser) {

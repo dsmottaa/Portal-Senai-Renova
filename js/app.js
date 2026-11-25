@@ -20,12 +20,8 @@ class AppController {
 
   init() {
     console.log('[DEBUG] AppController.init() chamado');
-    // Verificar estado de autenticação
-    if (window.auth.isAuthenticated()) {
-      this.mostrarPortal();
-    } else {
-      this.mostrarLogin();
-    }
+    // Sempre iniciar na tela de login, ignorando sessão anterior
+    this.mostrarLogin();
 
     this.configurarBotoesFlutuantes();
     this.inicializarEventosLogin();
