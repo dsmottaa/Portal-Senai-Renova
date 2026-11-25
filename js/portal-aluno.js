@@ -63,14 +63,6 @@ class PortalAlunoController {
               <p style="font-size:12px; color:#64748b; margin:2px 0 0 0;">Canal oficial para envio de atestados médicos, justificativas e acompanhamento de compensações.</p>
             </div>
           </div>
-
-          <!-- Botão de Ação Principal -->
-          <button type="button" class="btn btn-primary" onclick="window.portalAlunoController.abrirModalSolicitarJustificativa()" style="background:#0284c7; border-color:#0284c7; font-weight:700; font-size:13px; display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M12 5v14M5 12h14"></path>
-            </svg>
-            <span>Solicitar Compensação / Enviar Atestado</span>
-          </button>
         </div>
 
                 <!-- Indicadores Diretos Consolidados -->
@@ -305,6 +297,9 @@ class PortalAlunoController {
       }
 
       if (window.portalOrientadorController) {
+        if (typeof window.portalOrientadorController.renderAtestados === 'function') {
+          window.portalOrientadorController.renderAtestados();
+        }
         if (typeof window.portalOrientadorController.renderizarJustificativas === 'function') {
           window.portalOrientadorController.renderizarJustificativas();
         }

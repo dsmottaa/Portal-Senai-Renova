@@ -526,6 +526,11 @@ class PortalOrientadorController {
     if (filtroStatus) {
       lista = lista.filter(j => j.status === filtroStatus);
     }
+    lista = [...lista].sort((a, b) => {
+      if (a.status === 'PENDENTE' && b.status !== 'PENDENTE') return -1;
+      if (a.status !== 'PENDENTE' && b.status === 'PENDENTE') return 1;
+      return Number(b.id || 0) - Number(a.id || 0);
+    });
 
     if (badgeCount) badgeCount.textContent = `${lista.length} registro${lista.length !== 1 ? 's' : ''}`;
 
@@ -534,7 +539,12 @@ class PortalOrientadorController {
       return;
     }
 
+    const turmasMap = new Map();
+    ((window.db.data && window.db.data.turmas) || []).forEach(t => turmasMap.set(Number(t.id), t));
+
     tbody.innerHTML = lista.map(j => {
+      const turmaObj = turmasMap.get(Number(j.turmaId));
+      const turmaLabel = turmaObj ? turmaObj.codigo : (j.turmaId ? `Turma ${j.turmaId}` : '—');
       let badgeBg = '#fef3c7';
       let badgeColor = '#92400e';
       let statusLabel = 'Pendente';
@@ -559,7 +569,7 @@ class PortalOrientadorController {
         <tr>
           <td>
             <strong style="color:#0f172a; font-size:13px; display:block;">${j.alunoNome}</strong>
-            <span style="font-size:11px; color:#64748b;">Cadastrado por: ${j.cadastradoPor || 'Aluno'}</span>
+            <span style="font-size:11px; color:#64748b; display:block;">Turma: ${turmaLabel} • ${j.cadastradoPor || 'Aluno'}</span>
           </td>
           <td><span class="badge" style="background:#f1f5f9; color:#334155; font-size:11px; padding:3px 6px;">${j.tipo}</span></td>
           <td>${periodoStr}</td>
@@ -1274,6 +1284,16 @@ class PortalOrientadorController {
     const turmaMap = new Map();
     turmas.forEach(t => turmaMap.set(t.id, t));
 
+    const filtroTurmaEl = document.getElementById('filtroTurmaRelatorioOrientador');
+    if (filtroTurmaEl) {
+      const valorAtual = filtroTurmaEl.value || 'TODAS';
+      filtroTurmaEl.innerHTML = '<option value="TODAS">Todas as Turmas</option>' +
+        turmas.map(t => `<option value="${t.id}">${t.codigo} - ${t.nome || ''}</option>`).join('');
+      if (valorAtual !== 'TODAS' && turmas.some(t => String(t.id) === String(valorAtual))) {
+        filtroTurmaEl.value = valorAtual;
+      }
+    }
+
     const alunos = (window.db.data.alunos || []).filter(a => a.statusMatricula === 'ATIVO');
     const sinteseMap = new Map();
     turmas.forEach(t => {
@@ -1344,6 +1364,7 @@ class PortalOrientadorController {
     if (!tbody || !this._relatorioAlunosCache) return;
 
     const termo = ((document.getElementById('buscaAlunoRelatorioOrientador') || {}).value || '').toLowerCase().trim();
+    const filtroTurma = (document.getElementById('filtroTurmaRelatorioOrientador') || {}).value || 'TODAS';
     const filtroSit = (document.getElementById('filtroSituacaoRelatorioOrientador') || {}).value || 'TODOS';
 
     let filtrados = this._relatorioAlunosCache.filter(item => {
@@ -1352,6 +1373,11 @@ class PortalOrientadorController {
         const nomeMatch = (item.aluno.nome || '').toLowerCase().includes(termo);
         const raMatch = (item.aluno.ra || ('RA' + String(item.aluno.id))).toLowerCase().includes(termo);
         if (!nomeMatch && !raMatch) return false;
+      }
+
+      // Filtro por turma
+      if (filtroTurma !== 'TODAS' && String(item.aluno.turmaId) !== String(filtroTurma)) {
+        return false;
       }
 
       // Filtro de situação
@@ -1373,6 +1399,9 @@ class PortalOrientadorController {
       const al = item.aluno;
       const turmaCodigo = item.turma ? item.turma.codigo : `Turma ${al.turmaId || 1}`;
       const turmaNome = item.turma ? (item.turma.nome || '') : '';
+      const freqColor = item.freq < 75 ? '#e11d48' : (item.freq < 85 ? '#d97706' : '#16a34a');
+      const freqWidth = Math.max(0, Math.min(100, item.freq));
+
       let badgeBg = '#ecfdf5';
       let badgeColor = '#065f46';
       let badgeLabel = 'Regular';
@@ -1398,10 +1427,15 @@ class PortalOrientadorController {
           </td>
           <td class="col-turma">
             <span style="font-size:12px; font-weight:700; color:#1e293b; display:block;">${turmaCodigo}</span>
-            ${turmaNome ? `<span style="font-size:11px; color:#64748b; display:block; margin-top:2px; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${turmaNome}">${turmaNome}</span>` : ''}
+            ${turmaNome ? `<span style="font-size:11px; color:#64748b; display:block; margin-top:2px; max-width:165px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${turmaNome}">${turmaNome}</span>` : ''}
           </td>
-          <td class="col-freq center" style="font-weight:700; font-size:13px; color:${item.freq < 75 ? '#e11d48' : (item.freq < 85 ? '#d97706' : '#16a34a')};">
-            ${item.freq}%
+          <td class="col-freq center">
+            <div class="relatorio-freq-cell">
+              <div class="relatorio-freq-bar">
+                <div class="relatorio-freq-fill" style="width:${freqWidth}%; background:${freqColor};"></div>
+              </div>
+              <span style="font-weight:700; font-size:12.5px; color:${freqColor};">${item.freq}%</span>
+            </div>
           </td>
           <td class="col-faltas center" style="font-weight:700; color:${item.faltas > 0 ? '#b91c1c' : '#475569'};">
             ${item.faltas}
@@ -1422,14 +1456,11 @@ class PortalOrientadorController {
           </td>
           <td class="col-acoes center">
             <div class="relatorio-acoes-wrap">
-              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato(${al.id}, '${al.nome.replace(/'/g, "\\'")}')" title="Registrar Contato">
-                Contato
-              </button>
-              <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirModalAgendarCompensacao(${al.id}, '${al.nome.replace(/'/g, "\\'")}')" title="Agendar Compensação">
-                Compensar
-              </button>
               <button type="button" class="btn btn-outline btn-sm" onclick="window.portalOrientadorController.abrirProntuario(${al.id})" style="background:#f8fafc;" title="Ver Prontuário">
                 Prontuário
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato(${al.id}, '${al.nome.replace(/'/g, "\\'")}')" title="Registrar Contato">
+                Registrar Contato
               </button>
             </div>
           </td>

@@ -1608,27 +1608,37 @@ class AppController {
     const tabVisao = document.getElementById('alunoFreqTab_visaoGeral');
     const tabHist = document.getElementById('alunoFreqTab_historicoAulas');
     const tabNotas = document.getElementById('alunoSubView_notas');
+    const tabAtestados = document.getElementById('alunoSubView_atestados');
 
     const btnVisao = document.getElementById('tabBtnAluno_visaoGeral');
     const btnHist = document.getElementById('tabBtnAluno_historicoAulas');
     const btnNotas = document.getElementById('tabBtnAluno_notas');
+    const btnAtestados = document.getElementById('tabBtnAluno_atestados');
 
     if (tabVisao) tabVisao.style.display = tab === 'visaoGeral' ? 'block' : 'none';
     if (tabHist) tabHist.style.display = tab === 'historicoAulas' ? 'block' : 'none';
     if (tabNotas) tabNotas.style.display = tab === 'notas' ? 'block' : 'none';
+    if (tabAtestados) tabAtestados.style.display = tab === 'atestados' ? 'block' : 'none';
 
     if (btnVisao) btnVisao.classList.toggle('active', tab === 'visaoGeral');
     if (btnHist) btnHist.classList.toggle('active', tab === 'historicoAulas');
     if (btnNotas) btnNotas.classList.toggle('active', tab === 'notas');
+    if (btnAtestados) btnAtestados.classList.toggle('active', tab === 'atestados');
 
     if (tab === 'notas') {
       this.renderizarNotasAluno();
     } else if (tab === 'historicoAulas') {
       this.renderizarHistoricoAulasAluno();
+    } else if (tab === 'atestados') {
+      if (window.portalAlunoController && typeof window.portalAlunoController.renderizarSecaoOrientacao === 'function') {
+        window.portalAlunoController.renderizarSecaoOrientacao();
+      }
     }
 
     if (autoScroll) {
-      const targetEl = tab === 'notas' ? tabNotas : (tab === 'historicoAulas' ? tabHist : tabVisao);
+      const targetEl = tab === 'notas'
+        ? tabNotas
+        : (tab === 'historicoAulas' ? tabHist : (tab === 'atestados' ? tabAtestados : tabVisao));
       if (targetEl) {
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
@@ -2018,19 +2028,7 @@ class AppController {
           setTimeout(() => { el.style.boxShadow = ''; }, 1400);
         }
       } else if (area === 'atestados') {
-        if (window.portalAlunoController && typeof window.portalAlunoController.renderizarSecaoOrientacao === 'function') {
-          window.portalAlunoController.renderizarSecaoOrientacao();
-        }
-        const el = document.getElementById('alunoOrientacaoSecaoContainer');
-        if (el) {
-          el.style.display = 'block';
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          el.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
-          el.style.boxShadow = '0 0 0 3px rgba(2, 132, 199, 0.4)';
-          setTimeout(() => {
-            el.style.boxShadow = '';
-          }, 1500);
-        }
+        this.alternarFreqTab('atestados', true);
       }
     }
 

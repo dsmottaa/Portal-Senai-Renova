@@ -22,19 +22,19 @@
     rel="stylesheet">
 
   <!-- Estilos da Aplicação -->
-  <link rel="stylesheet" href="css/style.css?v=20261124-4">
-  <link rel="stylesheet" href="css/login.css?v=20261124-4">
-  <link rel="stylesheet" href="css/components.css?v=20261124-4">
-  <link rel="stylesheet" href="css/configuracoes.css?v=20261124-4">
-  <link rel="stylesheet" href="css/relatorios.css?v=20261124-4">
-  <link rel="stylesheet" href="css/assistente.css?v=20261124-4">
-  <link rel="stylesheet" href="css/coordenador.css?v=20261124-4">
-  <link rel="stylesheet" href="css/profile-select.css?v=20261124-4">
-  <link rel="stylesheet" href="css/professor-home.css?v=20261124-4">
-  <link rel="stylesheet" href="css/figma-screens.css?v=20261124-4">
-  <link rel="stylesheet" href="css/aluno-frequencia.css?v=20261124-4">
-  <link rel="stylesheet" href="css/portais.css?v=20261124-4">
-  <link rel="stylesheet" href="css/animations.css?v=20261124-4">
+  <link rel="stylesheet" href="css/style.css?v=20261124-5">
+  <link rel="stylesheet" href="css/login.css?v=20261124-5">
+  <link rel="stylesheet" href="css/components.css?v=20261124-5">
+  <link rel="stylesheet" href="css/configuracoes.css?v=20261124-5">
+  <link rel="stylesheet" href="css/relatorios.css?v=20261124-5">
+  <link rel="stylesheet" href="css/assistente.css?v=20261124-5">
+  <link rel="stylesheet" href="css/coordenador.css?v=20261124-5">
+  <link rel="stylesheet" href="css/profile-select.css?v=20261124-5">
+  <link rel="stylesheet" href="css/professor-home.css?v=20261124-5">
+  <link rel="stylesheet" href="css/figma-screens.css?v=20261124-5">
+  <link rel="stylesheet" href="css/aluno-frequencia.css?v=20261124-5">
+  <link rel="stylesheet" href="css/portais.css?v=20261124-5">
+  <link rel="stylesheet" href="css/animations.css?v=20261124-5">
   <!-- jsPDF para exportação de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
@@ -317,7 +317,7 @@
 
         <!-- Coluna Esquerda: Fotografia Arquitetônica da Fachada SENAI -->
         <aside class="login-cover-side" aria-label="Campus SENAI">
-          <img src="img/fachada-senai.jpg?v=20261124-4" alt="Fachada da Escola SENAI Roberto Simonsen" class="login-cover-image" loading="eager" decoding="sync">
+          <img src="img/fachada-senai.jpg?v=20261124-5" alt="Fachada da Escola SENAI Roberto Simonsen" class="login-cover-image" loading="eager" decoding="sync">
           <div class="login-cover-overlay"></div>
           <div class="login-cover-content">
             <div class="login-cover-badge">
@@ -2892,6 +2892,16 @@
                   </svg>
                   <span>Boletim / Notas</span>
                 </button>
+                <button type="button" class="aluno-freq-tab-button" id="tabBtnAluno_atestados"
+                  onclick="window.app.alternarFreqTab('atestados')">
+                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                  </svg>
+                  <span>Meus Atestados</span>
+                </button>
               </div>
 
               <!-- ============================================= -->
@@ -3218,6 +3228,26 @@
                 </div>
               </div>
 
+              <!-- ============================================= -->
+              <!-- SUB-ABA 4: MEUS ATESTADOS & JUSTIFICATIVAS    -->
+              <!-- ============================================= -->
+              <div id="alunoSubView_atestados" style="display: none;">
+                <div class="aluno-hist-table-card" style="padding: 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                      <h3 style="font-size: 17px; font-weight: 800; color: #0f172a; margin: 0;">Meus Atestados &amp; Justificativas de Ausência</h3>
+                      <p style="font-size: 13px; color: #64748b; margin: 4px 0 0 0;">Envie comprovantes médicos ou justificativas e acompanhe a homologação pela Orientação Educacional em tempo real.</p>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="window.portalAlunoController.abrirModalSolicitarJustificativa()">
+                      + Enviar Novo Atestado
+                    </button>
+                  </div>
+                  <div id="alunoOrientacaoSecaoContainer">
+                    <!-- Preenchido dinamicamente via js/portal-aluno.js -->
+                  </div>
+                </div>
+              </div>
+
             </div>
           </section>
 
@@ -3509,8 +3539,8 @@
               <div class="orientador-topbar">
                 <div class="orientador-titlebox">
                   <div>
-                    <h1 class="orientador-main-title">Portal dos Orientadores</h1>
-                    <p class="orientador-main-sub">Relatório Geral de Estudantes • Assiduidade, faltas, compensações e histórico de contato.</p>
+                    <h1 class="orientador-main-title">Relatório Geral de Estudantes</h1>
+                    <p class="orientador-main-sub">Assiduidade, faltas, atrasos, compensações e histórico de acolhimento.</p>
                   </div>
                 </div>
 
@@ -3527,62 +3557,63 @@
                 </div>
               </div>
 
-              <!-- Cards Resumo / KPIs do Relatório -->
-              <div class="radar-kpi-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px;">
-                <div class="radar-kpi-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px;">
-                  <span style="font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Total de Alunos</span>
-                  <div id="relatorioKpiTotalAlunos" style="font-size:24px; font-weight:800; color:#0f172a; margin-top:6px;">0</div>
-                  <span style="font-size:11.5px; color:#10b981; margin-top:4px; display:block;">Estudantes matriculados</span>
+              <!-- Grid de 5 Cards de KPI -->
+              <div class="orientador-relatorio-kpis">
+                <div class="orientador-kpi-card">
+                  <span class="orientador-kpi-label">Total de Alunos</span>
+                  <div id="relatorioKpiTotalAlunos" class="orientador-kpi-value" style="color:#0f172a;">0</div>
+                  <span class="orientador-kpi-sub" style="color:#10b981;">Estudantes matriculados</span>
                 </div>
-                <div class="radar-kpi-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px;">
-                  <span style="font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Frequência Média</span>
-                  <div id="relatorioKpiFreqMedia" style="font-size:24px; font-weight:800; color:#0284c7; margin-top:6px;">0%</div>
-                  <span style="font-size:11.5px; color:#64748b; margin-top:4px; display:block;">Meta regimental: ≥ 75%</span>
+                <div class="orientador-kpi-card">
+                  <span class="orientador-kpi-label">Frequência Média</span>
+                  <div id="relatorioKpiFreqMedia" class="orientador-kpi-value" style="color:#0284c7;">0%</div>
+                  <span class="orientador-kpi-sub">Meta regimental: ≥ 75%</span>
                 </div>
-                <div class="radar-kpi-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px;">
-                  <span style="font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Frequência Crítica (&lt;75%)</span>
-                  <div id="relatorioKpiCriticos" style="font-size:24px; font-weight:800; color:#e11d48; margin-top:6px;">0</div>
-                  <span style="font-size:11.5px; color:#e11d48; margin-top:4px; display:block;">Risco iminente de retenção</span>
+                <div class="orientador-kpi-card">
+                  <span class="orientador-kpi-label">Frequência Crítica (&lt;75%)</span>
+                  <div id="relatorioKpiCriticos" class="orientador-kpi-value" style="color:#e11d48;">0</div>
+                  <span class="orientador-kpi-sub" style="color:#e11d48;">Risco iminente de retenção</span>
                 </div>
-                <div class="radar-kpi-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px;">
-                  <span style="font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Faltas sem Justificativa</span>
-                  <div id="relatorioKpiFaltasSemJust" style="font-size:24px; font-weight:800; color:#d97706; margin-top:6px;">0</div>
-                  <span style="font-size:11.5px; color:#d97706; margin-top:4px; display:block;">Ausências não abonadas</span>
+                <div class="orientador-kpi-card">
+                  <span class="orientador-kpi-label">Faltas s/ Justificativa</span>
+                  <div id="relatorioKpiFaltasSemJust" class="orientador-kpi-value" style="color:#d97706;">0</div>
+                  <span class="orientador-kpi-sub" style="color:#d97706;">Ausências não abonadas</span>
                 </div>
-                <div class="radar-kpi-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px;">
-                  <span style="font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase;">Compensações Pendentes</span>
-                  <div id="relatorioKpiCompPendentes" style="font-size:24px; font-weight:800; color:#7c3aed; margin-top:6px;">0</div>
-                  <span style="font-size:11.5px; color:#7c3aed; margin-top:4px; display:block;">Reposições a cumprir</span>
+                <div class="orientador-kpi-card">
+                  <span class="orientador-kpi-label">Compensações Pendentes</span>
+                  <div id="relatorioKpiCompPendentes" class="orientador-kpi-value" style="color:#7c3aed;">0</div>
+                  <span class="orientador-kpi-sub" style="color:#7c3aed;">Reposições a cumprir</span>
                 </div>
               </div>
 
-              <!-- Card Tabela com Filtros -->
-              <div class="radar-urgency-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px;">
-                <div class="radar-urgency-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <!-- Card Tabela com Barra de Filtros -->
+              <div class="orientador-relatorio-card">
+                <div class="orientador-relatorio-toolbar">
                   <div>
-                    <h3 style="font-size:16px; font-weight:800; color:#0f172a; margin:0;">Lista Nominal de Estudantes</h3>
-                    <p style="font-size:12.5px; color:#64748b; margin:4px 0 0 0;">Indicadores consolidados de assiduidade, faltas, compensações e histórico de acolhimento.</p>
+                    <h3 class="orientador-relatorio-card-title">Lista Nominal de Estudantes</h3>
+                    <p class="orientador-relatorio-card-sub">Indicadores consolidados de assiduidade, faltas, compensações e histórico de acolhimento.</p>
                   </div>
-                  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                    <!-- Busca por Nome / RA -->
-                    <div style="position:relative;">
-                      <input type="text" id="buscaAlunoRelatorioOrientador" class="filter-select" placeholder="Buscar por aluno ou RA..."
-                        style="padding-left:32px; width:220px;" oninput="window.portalOrientadorController.filtrarRelatorioAlunos()">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"
-                        style="position:absolute; left:10px; top:50%; transform:translateY(-50%);">
+                  <div class="orientador-relatorio-filters">
+                    <div class="orientador-relatorio-search">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                       </svg>
+                      <input type="text" id="buscaAlunoRelatorioOrientador" class="filter-select" placeholder="Buscar por nome ou RA..."
+                        oninput="window.portalOrientadorController.filtrarRelatorioAlunos()">
                     </div>
 
-                    <!-- Filtro por Situação -->
+                    <select id="filtroTurmaRelatorioOrientador" class="filter-select" onchange="window.portalOrientadorController.filtrarRelatorioAlunos()">
+                      <option value="TODAS">Todas as Turmas</option>
+                    </select>
+
                     <select id="filtroSituacaoRelatorioOrientador" class="filter-select" onchange="window.portalOrientadorController.filtrarRelatorioAlunos()">
-                      <option value="TODOS">Todas as Situações</option>
-                      <option value="CRITICO">Frequência Crítica (&lt;75%)</option>
-                      <option value="ALERTA">Alerta (75% - 85%)</option>
-                      <option value="COMPENSACAO">Com Compensação Pendente</option>
-                      <option value="SEM_CONTATO">Sem Contato Registrado</option>
-                      <option value="REGULAR">Assiduidade Regular (≥85%)</option>
+                      <option value="TODOS">Todos</option>
+                      <option value="CRITICO">Crítico (&lt;75%)</option>
+                      <option value="ALERTA">Atenção (75% - 85%)</option>
+                      <option value="REGULAR">Regular (≥85%)</option>
+                      <option value="COMPENSACAO">Com Compensação</option>
+                      <option value="SEM_CONTATO">Sem Contato</option>
                     </select>
 
                     <button type="button" class="btn btn-primary btn-sm" onclick="window.portalOrientadorController.abrirModalRegistrarContato()">
@@ -3591,19 +3622,19 @@
                   </div>
                 </div>
 
-                <div class="table-responsive">
-                  <table class="radar-urgency-table" style="width:100%;">
+                <div class="orientador-relatorio-table-wrap">
+                  <table class="orientador-relatorio-table">
                     <thead>
                       <tr>
-                        <th class="col-aluno">ESTUDANTE</th>
-                        <th class="col-turma">TURMA</th>
-                        <th class="col-freq center">FREQUÊNCIA</th>
-                        <th class="col-faltas center">FALTAS S/ JUST.</th>
-                        <th class="col-atrasos center">ATRASOS</th>
-                        <th class="col-comp center">COMPENSAÇÕES</th>
-                        <th class="col-contato">ÚLTIMO CONTATO</th>
-                        <th class="col-situacao center">SITUAÇÃO</th>
-                        <th class="col-acoes center">AÇÕES</th>
+                        <th class="col-aluno">Estudante</th>
+                        <th class="col-turma">Turma</th>
+                        <th class="col-freq center">Frequência</th>
+                        <th class="col-faltas center">Faltas</th>
+                        <th class="col-atrasos center">Atrasos</th>
+                        <th class="col-comp center">Compensações</th>
+                        <th class="col-contato">Último Contato</th>
+                        <th class="col-situacao center">Situação</th>
+                        <th class="col-acoes center">Ações</th>
                       </tr>
                     </thead>
                     <tbody id="orientadorRelatorioTbody">
@@ -4861,22 +4892,22 @@
 
 
   <!-- Scripts da Aplicação -->
-  <script src="js/db.js?v=20261124-4"></script>
-  <script src="js/auth.js?v=20261124-4"></script>
-  <script src="js/configuracoes.js?v=20261124-4"></script>
-  <script src="js/diario.js?v=20261124-4"></script>
-  <script src="js/subturmas.js?v=20261124-4"></script>
-  <script src="js/ocorrencias.js?v=20261124-4"></script>
-  <script src="js/compensacoes.js?v=20261124-4"></script>
-  <script src="js/notas.js?v=20261124-4"></script>
-  <script src="js/sintese.js?v=20261124-4"></script>
-  <script src="js/relatorios.js?v=20261124-4"></script>
-  <script src="js/assistente.js?v=20261124-4"></script>
-  <script src="js/coordenador.js?v=20261124-4"></script>
-  <script src="js/orientador-comp.js?v=20261124-4"></script>
-  <script src="js/portal-orientador.js?v=20261124-4"></script>
-  <script src="js/portal-aluno.js?v=20261124-4"></script>
-  <script src="js/app.js?v=20261124-4"></script>
+  <script src="js/db.js?v=20261124-5"></script>
+  <script src="js/auth.js?v=20261124-5"></script>
+  <script src="js/configuracoes.js?v=20261124-5"></script>
+  <script src="js/diario.js?v=20261124-5"></script>
+  <script src="js/subturmas.js?v=20261124-5"></script>
+  <script src="js/ocorrencias.js?v=20261124-5"></script>
+  <script src="js/compensacoes.js?v=20261124-5"></script>
+  <script src="js/notas.js?v=20261124-5"></script>
+  <script src="js/sintese.js?v=20261124-5"></script>
+  <script src="js/relatorios.js?v=20261124-5"></script>
+  <script src="js/assistente.js?v=20261124-5"></script>
+  <script src="js/coordenador.js?v=20261124-5"></script>
+  <script src="js/orientador-comp.js?v=20261124-5"></script>
+  <script src="js/portal-orientador.js?v=20261124-5"></script>
+  <script src="js/portal-aluno.js?v=20261124-6"></script>
+  <script src="js/app.js?v=20261124-5"></script>
 
   <!-- Modal Selecionar Semestre ao Gerar Boletim Oficial -->
   <div id="modalBoletimSemestre" class="modal-overlay" style="display:none;">
